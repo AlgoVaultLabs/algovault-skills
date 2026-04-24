@@ -1,0 +1,23 @@
+{
+  "_doc": "Per-slug smoke-test payload templates. Each entry maps the Skill's primary tool (tools[0]) to a representative argument set. Free-tier constraints: get_trade_signal limited to 15m/1h timeframes; scan_funding_arb limited to 5 results.",
+  "quick-btc-check":               { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "1h" } },
+  "portfolio-scanner":             { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "15m" } },
+  "regime-aware-trading":          { "tool": "get_market_regime",  "args": { "coin": "ETH", "timeframe": "4h" } },
+  "funding-arb-monitor":           { "tool": "scan_funding_arb",   "args": { "minSpreadBps": 10, "limit": 5 } },
+  "full-3-tool-pipeline":          { "tool": "get_market_regime",  "args": { "coin": "SOL", "timeframe": "4h" } },
+  "multi-timeframe-confirmation":  { "tool": "get_trade_signal",   "args": { "coin": "ETH", "timeframe": "15m" } },
+  "tradfi-rotation":               { "tool": "get_market_regime",  "args": { "coin": "TSLA", "timeframe": "4h" } },
+  "risk-gated-entry":              { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "4h" } },
+  "funding-sentiment-dashboard":   { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "4h" } },
+  "contrarian-meme-scanner":       { "tool": "get_market_regime",  "args": { "coin": "DOGE", "timeframe": "4h" } },
+  "divergence-detector":           { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "4h" } },
+  "hourly-digest-bot":             { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "1h" } },
+  "hedging-advisor":               { "tool": "get_market_regime",  "args": { "coin": "ETH", "timeframe": "4h" } },
+  "volatility-breakout-watch":     { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "4h" } },
+  "cross-asset-correlation":       { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "1h" } },
+  "funding-cash-and-carry":        { "tool": "scan_funding_arb",   "args": { "minSpreadBps": 10, "limit": 5 } },
+  "weekend-vs-weekday-patterns":   { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "1h" } },
+  "agent-portfolio-rebalance":     { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "1d" } },
+  "smart-dca-bot":                 { "tool": "get_trade_signal",   "args": { "coin": "BTC", "timeframe": "1h" } },
+  "multi-agent-war-room":          { "tool": "get_market_regime",  "args": { "coin": "BTC", "timeframe": "4h" } }
+}

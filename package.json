@@ -15,7 +15,7 @@
     "preflight": "bash scripts/skills_preflight.sh",
     "gen": "node scripts/gen-skill.mjs",
     "gen:dry": "node scripts/gen-skill.mjs --dry-run",
-    "test": "node --test tests/smoke"
+    "test": "node --test tests/smoke/*.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -1,6 +1,6 @@
 ---
-name: Funding Cash-and-Carry
-description: Find a funding arb spread, then get a trade call on the long side. If the trade call agrees with the long direction, you have double conviction. — uses AlgoVault MCP (scan_funding_arb → get_trade_signal). Difficulty: Advanced.
+name: funding-cash-and-carry
+description: "Funding Cash-and-Carry — Find a funding arb spread, then get a trade call on the long side. If the trade call agrees with the long direction, you have double conviction. uses AlgoVault MCP (scan_funding_arb → get_trade_signal). Difficulty: Advanced."
 ---
 
 # Funding Cash-and-Carry

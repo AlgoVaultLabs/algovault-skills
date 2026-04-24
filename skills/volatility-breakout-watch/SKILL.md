@@ -1,6 +1,6 @@
 ---
-name: Volatility Breakout Watch
-description: Use regime detection as a screener: find assets in VOLATILE regime with high confidence — these are breakout candidates. Then get trade call for direction. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced.
+name: volatility-breakout-watch
+description: "Volatility Breakout Watch — Use regime detection as a screener: find assets in VOLATILE regime with high confidence — these are breakout candidates. Then get trade call for direction. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced."
 ---
 
 # Volatility Breakout Watch

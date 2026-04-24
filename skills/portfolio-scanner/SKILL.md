@@ -1,6 +1,6 @@
 ---
-name: Portfolio Scanner
-description: Loop through the top 10 assets, get trade calls for each, and filter by high confidence. — uses AlgoVault MCP (get_trade_signal). Difficulty: Intermediate.
+name: portfolio-scanner
+description: "Portfolio Scanner — Loop through the top 10 assets, get trade calls for each, and filter by high confidence. uses AlgoVault MCP (get_trade_signal). Difficulty: Intermediate."
 ---
 
 # Portfolio Scanner

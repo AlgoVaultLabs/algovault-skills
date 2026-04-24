@@ -1,6 +1,6 @@
 ---
-name: Hourly Digest Bot
-description: Build an automated digest: scan all tier-1 and tier-2 assets every hour, summarize trade calls and market regime into a brief report. — uses AlgoVault MCP (get_trade_signal → get_market_regime). Difficulty: Advanced.
+name: hourly-digest-bot
+description: "Hourly Digest Bot — Build an automated digest: scan all tier-1 and tier-2 assets every hour, summarize trade calls and market regime into a brief report. uses AlgoVault MCP (get_trade_signal → get_market_regime). Difficulty: Advanced."
 ---
 
 # Hourly Digest Bot

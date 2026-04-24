@@ -42,18 +42,31 @@ jobs:
           jq -e '.name == "algovault-skills"' .claude-plugin/plugin.json
           jq -e '.mcpServers.algovault.url == "https://api.algovault.com/mcp"' .claude-plugin/plugin.json
 
-      # ───────── Smithery publish (gated on token) ─────────
-      - name: Publish to Smithery (if token present)
+      # ───────── Smithery publish (gated on API key) ─────────
+      # Smithery CLI v4.x: per-skill `skill publish`, namespace via --namespace flag,
+      # auth via SMITHERY_API_KEY env var. Each manifest entry maps to skills/<slug>/SKILL.md.
+      - name: Publish 20 skills to Smithery (if API key present)
         env:
-          SMITHERY_TOKEN: ${{ secrets.SMITHERY_TOKEN }}
+          SMITHERY_API_KEY: ${{ secrets.SMITHERY_API_KEY }}
         run: |
-          if [ -z "$SMITHERY_TOKEN" ]; then
-            echo "SKIP: SMITHERY_TOKEN not set in repo secrets — manual publish required"
-            echo "    1. npx -y @smithery/cli login"
-            echo "    2. npx -y @smithery/cli publish ."
+          if [ -z "$SMITHERY_API_KEY" ]; then
+            echo "SKIP: SMITHERY_API_KEY not set in repo secrets — manual publish required"
+            echo "    1. npx -y @smithery/cli auth login"
+            echo "    2. for slug in \$(jq -r '.[].slug' skills/manifest.json); do"
+            echo "         npx -y @smithery/cli skill publish ./skills/\$slug --namespace algovault"
+            echo "       done"
             exit 0
           fi
-          npx -y @smithery/cli publish . --token "$SMITHERY_TOKEN"
+          OK=0; FAIL=0
+          while IFS= read -r slug; do
+            if npx -y @smithery/cli skill publish "./skills/$slug" --namespace algovault 2>&1 | grep -q "Updated skill"; then
+              OK=$((OK+1)); echo "  ✓ algovault/$slug"
+            else
+              FAIL=$((FAIL+1)); echo "  ✗ algovault/$slug"
+            fi
+          done < <(jq -r '.[].slug' skills/manifest.json)
+          echo "Smithery publish: $OK ok / $FAIL fail (expected 20/0)"
+          test "$FAIL" = "0"
 
       # ───────── Anthropic claude-plugins-official PR (gated on token) ─────────
       - name: Open PR to anthropics/claude-plugins-official (if token present)

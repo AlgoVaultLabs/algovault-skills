@@ -1,6 +1,6 @@
 ---
-name: Full 3-Tool Pipeline
-description: The complete AlgoVault workflow: regime detection, trade call, then arb check for the same asset. Maximum context for one decision. — uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Advanced.
+name: full-3-tool-pipeline
+description: "Full 3-Tool Pipeline — The complete AlgoVault workflow: regime detection, trade call, then arb check for the same asset. Maximum context for one decision. uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Advanced."
 ---
 
 # Full 3-Tool Pipeline

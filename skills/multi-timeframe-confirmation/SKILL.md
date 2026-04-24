@@ -1,6 +1,6 @@
 ---
-name: Multi-Timeframe Confirmation
-description: Get trade calls on multiple timeframes for the same asset. Only act when all timeframes agree on direction. — uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced.
+name: multi-timeframe-confirmation
+description: "Multi-Timeframe Confirmation — Get trade calls on multiple timeframes for the same asset. Only act when all timeframes agree on direction. uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced."
 ---
 
 # Multi-Timeframe Confirmation

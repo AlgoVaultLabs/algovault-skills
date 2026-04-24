@@ -1,6 +1,6 @@
 ---
-name: TradFi Rotation
-description: Compare regime and direction across TradFi perpetuals. Rotate into the asset with the strongest trend. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced.
+name: tradfi-rotation
+description: "TradFi Rotation — Compare regime and direction across TradFi perpetuals. Rotate into the asset with the strongest trend. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced."
 ---
 
 # TradFi Rotation

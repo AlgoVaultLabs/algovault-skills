@@ -1,6 +1,6 @@
 ---
-name: Weekend vs Weekday Patterns
-description: Schedule trade calls every 4 hours, log results over time. Compare weekend vs weekday regime patterns to find exploitable edges. — uses AlgoVault MCP (get_trade_signal → get_market_regime). Difficulty: Research.
+name: weekend-vs-weekday-patterns
+description: "Weekend vs Weekday Patterns — Schedule trade calls every 4 hours, log results over time. Compare weekend vs weekday regime patterns to find exploitable edges. uses AlgoVault MCP (get_trade_signal → get_market_regime). Difficulty: Research."
 ---
 
 # Weekend vs Weekday Patterns

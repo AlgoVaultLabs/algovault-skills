@@ -1,6 +1,6 @@
 ---
-name: Regime-Aware Trading
-description: Check the market regime first. Only request trade calls when the regime is favorable for directional trading. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Intermediate.
+name: regime-aware-trading
+description: "Regime-Aware Trading — Check the market regime first. Only request trade calls when the regime is favorable for directional trading. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Intermediate."
 ---
 
 # Regime-Aware Trading

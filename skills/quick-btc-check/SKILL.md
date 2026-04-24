@@ -1,6 +1,6 @@
 ---
-name: Quick BTC Check
-description: The simplest possible call. Ask your agent for a single trade call. — uses AlgoVault MCP (get_trade_signal). Difficulty: Beginner.
+name: quick-btc-check
+description: "Quick BTC Check — The simplest possible call. Ask your agent for a single trade call. uses AlgoVault MCP (get_trade_signal). Difficulty: Beginner."
 ---
 
 # Quick BTC Check

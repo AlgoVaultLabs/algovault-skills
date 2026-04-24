@@ -1,6 +1,6 @@
 ---
-name: Cross-Asset Correlation
-description: Get trade calls for BTC, ETH, SOL simultaneously. If all say SELL, it's a macro risk-off signal, not just one asset. — uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced.
+name: cross-asset-correlation
+description: "Cross-Asset Correlation — Get trade calls for BTC, ETH, SOL simultaneously. If all say SELL, it's a macro risk-off signal, not just one asset. uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced."
 ---
 
 # Cross-Asset Correlation

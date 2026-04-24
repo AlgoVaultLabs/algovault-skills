@@ -1,6 +1,6 @@
 ---
-name: Agent Portfolio Rebalance
-description: Daily regime check for each asset in your portfolio. Shift allocation toward TRENDING assets, reduce exposure to VOLATILE/RANGING positions. — uses AlgoVault MCP (get_market_regime). Difficulty: Advanced.
+name: agent-portfolio-rebalance
+description: "Agent Portfolio Rebalance — Daily regime check for each asset in your portfolio. Shift allocation toward TRENDING assets, reduce exposure to VOLATILE/RANGING positions. uses AlgoVault MCP (get_market_regime). Difficulty: Advanced."
 ---
 
 # Agent Portfolio Rebalance

@@ -1,6 +1,6 @@
 ---
-name: Funding Arb Monitor
-description: Scan for cross-venue funding rate arbitrage opportunities. Alert when the annualized spread exceeds your threshold. — uses AlgoVault MCP (scan_funding_arb). Difficulty: Intermediate.
+name: funding-arb-monitor
+description: "Funding Arb Monitor — Scan for cross-venue funding rate arbitrage opportunities. Alert when the annualized spread exceeds your threshold. uses AlgoVault MCP (scan_funding_arb). Difficulty: Intermediate."
 ---
 
 # Funding Arb Monitor

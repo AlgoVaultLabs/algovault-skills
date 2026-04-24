@@ -1,6 +1,6 @@
 ---
-name: Funding Sentiment Dashboard
-description: Get market regime for major assets and use the cross-venue funding sentiment to gauge overall market bias. — uses AlgoVault MCP (get_market_regime). Difficulty: Advanced.
+name: funding-sentiment-dashboard
+description: "Funding Sentiment Dashboard — Get market regime for major assets and use the cross-venue funding sentiment to gauge overall market bias. uses AlgoVault MCP (get_market_regime). Difficulty: Advanced."
 ---
 
 # Funding Sentiment Dashboard

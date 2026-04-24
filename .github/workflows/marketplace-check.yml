@@ -42,15 +42,17 @@ jobs:
             | sed -n 's/^data: //p' | head -1 | jq -r '.result.tools | length')
           test "$TOOL_COUNT" = "3"
 
-      - name: Verify Smithery listing (if applicable)
+      - name: Verify Smithery listing (20 skills under algovault namespace)
         continue-on-error: true
         run: |
-          npx -y @smithery/cli search algovault-skills 2>&1 | tee /tmp/smithery.log
-          if grep -q algovault-skills /tmp/smithery.log; then
-            echo "SMITHERY: LIVE"
-          else
-            echo "SMITHERY: NOT_LISTED (manual submission may be pending)"
-          fi
+          # CLI v4: per-skill model. Confirm all 20 manifest slugs are reachable.
+          OK=0; MISSING=0
+          while IFS= read -r slug; do
+            CODE=$(curl -fsS -o /dev/null -w "%{http_code}" "https://smithery.ai/skills/algovault/$slug")
+            if [ "$CODE" = "200" ]; then OK=$((OK+1)); else MISSING=$((MISSING+1)); echo "  MISSING algovault/$slug (HTTP $CODE)"; fi
+          done < <(jq -r '.[].slug' skills/manifest.json)
+          echo "SMITHERY: $OK/20 live, $MISSING missing"
+          test "$OK" = "20"
 
       - name: Telegram alert on failure
         if: failure()

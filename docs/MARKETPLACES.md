@@ -8,7 +8,7 @@ Last verified: 2026-04-24.
 | # | Channel | Status | Notes / Action |
 |---|---|---|---|
 | 1 | [GitHub source](https://github.com/AlgoVaultLabs/algovault-skills) | **LIVE** | MIT licensed; `main` branch is the canonical source. |
-| 2 | [Smithery Registry](https://smithery.ai) | **PENDING_MANUAL_SUBMISSION** | `npx @smithery/cli publish` requires `SMITHERY_TOKEN`. Workflow `.github/workflows/publish.yml` is wired to publish automatically once the token is added to repo secrets. Until then, manual one-time publish via `npx -y @smithery/cli login && npx -y @smithery/cli publish .` from a maintainer machine. |
+| 2 | [Smithery Registry](https://smithery.ai/skills/algovault) | **LIVE** | Published 2026-04-24 as 20 individual skills under the `algovault` namespace (Smithery CLI v4.x is per-skill, not bundle). Browse: <https://smithery.ai/skills/algovault>. Install one with `npx -y @smithery/cli skill add algovault/<slug>`. CI auto-republishes on every `git tag v*` via `.github/workflows/publish.yml` (loops over `skills/manifest.json`); `SMITHERY_API_KEY` repo secret provisioned. |
 | 3 | [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official) | **PENDING_PR** | Workflow opens a fork-based PR when `ANTHROPIC_PR_TOKEN` repo secret is set (a GitHub PAT with `public_repo` scope on a fork). Until then, manual fork + PR per the [Anthropic plugin marketplace docs](https://code.claude.com/docs/en/plugin-marketplaces). |
 | 4 | [claudemarketplaces.com](https://claudemarketplaces.com) | **MANUAL_SUBMITTED** (target) | No public submission API exists (verified `https://claudemarketplaces.com/api/` → HTTP 404 on 2026-04-24). See [SUBMIT_CLAUDEMARKETPLACES.md](./SUBMIT_CLAUDEMARKETPLACES.md) for the human-driven submission steps. |
 | 5 | [skillsmp.com](https://skillsmp.com) | **MANUAL_SUBMITTED** (target) | No public submission API exists (verified `https://skillsmp.com/api/` → HTTP 404 on 2026-04-24). See [SUBMIT_SKILLSMP.md](./SUBMIT_SKILLSMP.md) for the human-driven submission steps. |
@@ -31,7 +31,7 @@ To ship a new version (e.g., adding a Skill):
 runs daily at 08:00 UTC and verifies:
 - Repo still public + `plugin.json` valid.
 - `api.algovault.com/mcp` reachable + tools/list returns 3 tools.
-- Smithery search still finds `algovault-skills` (after manual publish).
+- Smithery search still finds the 20 `algovault/<slug>` skills.
 - Telegram WARNING fires on any failure (using `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` repo secrets).
 
 ## Pre-flight requirements before re-publishing

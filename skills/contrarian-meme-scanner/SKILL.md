@@ -1,6 +1,6 @@
 ---
-name: Contrarian Meme Scanner
-description: Scan lower-tier assets for contrarian setups: high-confidence SELL calls during an uptrend may signal crowded longs about to unwind. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced.
+name: contrarian-meme-scanner
+description: "Contrarian Meme Scanner — Scan lower-tier assets for contrarian setups: high-confidence SELL calls during an uptrend may signal crowded longs about to unwind. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced."
 ---
 
 # Contrarian Meme Scanner

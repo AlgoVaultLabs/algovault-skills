@@ -1,6 +1,6 @@
 ---
-name: Divergence Detector
-description: Compare trade call direction vs market regime. When they disagree, flag it as a high-risk divergence. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced.
+name: divergence-detector
+description: "Divergence Detector — Compare trade call direction vs market regime. When they disagree, flag it as a high-risk divergence. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced."
 ---
 
 # Divergence Detector

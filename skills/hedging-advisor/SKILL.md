@@ -1,6 +1,6 @@
 ---
-name: Hedging Advisor
-description: You hold a long ETH position. Check regime and trade call — if both turn bearish, look for a funding arb to hedge via the cheaper venue. — uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Advanced.
+name: hedging-advisor
+description: "Hedging Advisor — You hold a long ETH position. Check regime and trade call — if both turn bearish, look for a funding arb to hedge via the cheaper venue. uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Advanced."
 ---
 
 # Hedging Advisor

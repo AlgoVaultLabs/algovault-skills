@@ -1,6 +1,6 @@
 ---
-name: Risk-Gated Entry
-description: Only enter trades when both confidence and regime alignment pass your risk filters. Skip everything else. — uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced.
+name: risk-gated-entry
+description: "Risk-Gated Entry — Only enter trades when both confidence and regime alignment pass your risk filters. Skip everything else. uses AlgoVault MCP (get_market_regime → get_trade_signal). Difficulty: Advanced."
 ---
 
 # Risk-Gated Entry

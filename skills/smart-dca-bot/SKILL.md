@@ -1,6 +1,6 @@
 ---
-name: Smart DCA Bot
-description: Dollar-cost averaging, enhanced: skip buys when the trade call says SELL with high confidence. Only DCA when direction is neutral or favorable. — uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced.
+name: smart-dca-bot
+description: "Smart DCA Bot — Dollar-cost averaging, enhanced: skip buys when the trade call says SELL with high confidence. Only DCA when direction is neutral or favorable. uses AlgoVault MCP (get_trade_signal). Difficulty: Advanced."
 ---
 
 # Smart DCA Bot

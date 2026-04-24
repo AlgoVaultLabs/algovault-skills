@@ -1,6 +1,6 @@
 ---
-name: Multi-Agent War Room
-description: Three specialized agents, one coordinator. Agent A: regime, Agent B: trade calls, Agent C: funding arbs. Coordinator synthesizes all three. — uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Expert.
+name: multi-agent-war-room
+description: "Multi-Agent War Room — Three specialized agents, one coordinator. Agent A: regime, Agent B: trade calls, Agent C: funding arbs. Coordinator synthesizes all three. uses AlgoVault MCP (get_market_regime → get_trade_signal → scan_funding_arb). Difficulty: Expert."
 ---
 
 # Multi-Agent War Room

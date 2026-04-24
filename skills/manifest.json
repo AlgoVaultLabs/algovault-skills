@@ -1,1 +1,182 @@
-[]
+[
+  {
+    "slug": "quick-btc-check",
+    "name": "Quick BTC Check",
+    "description": "The simplest possible call. Ask your agent for a single trade call.",
+    "difficulty": "Beginner",
+    "tools": ["get_trade_signal"],
+    "prompt": "Get me a trade call for BTC on the 1h timeframe",
+    "pattern": "single tool call"
+  },
+  {
+    "slug": "portfolio-scanner",
+    "name": "Portfolio Scanner",
+    "description": "Loop through the top 10 assets, get trade calls for each, and filter by high confidence.",
+    "difficulty": "Intermediate",
+    "tools": ["get_trade_signal"],
+    "prompt": "Get trade calls for BTC, ETH, SOL, DOGE, XRP, ADA, AVAX, LINK, DOT, and MATIC on the 15m timeframe. Only show me the ones with confidence above 70%.",
+    "pattern": "batch calling, confidence filtering"
+  },
+  {
+    "slug": "regime-aware-trading",
+    "name": "Regime-Aware Trading",
+    "description": "Check the market regime first. Only request trade calls when the regime is favorable for directional trading.",
+    "difficulty": "Intermediate",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "First check the market regime for ETH on the 4h timeframe. If it's TRENDING_UP or TRENDING_DOWN, get me a trade call on the 15m timeframe. If it's RANGING or VOLATILE, skip it.",
+    "pattern": "conditional chaining"
+  },
+  {
+    "slug": "funding-arb-monitor",
+    "name": "Funding Arb Monitor",
+    "description": "Scan for cross-venue funding rate arbitrage opportunities. Alert when the annualized spread exceeds your threshold.",
+    "difficulty": "Intermediate",
+    "tools": ["scan_funding_arb"],
+    "prompt": "Scan for funding arbitrage opportunities with a minimum spread of 10 basis points. Show me the top 5 ranked by annualized return.",
+    "pattern": "threshold-based alerting"
+  },
+  {
+    "slug": "full-3-tool-pipeline",
+    "name": "Full 3-Tool Pipeline",
+    "description": "The complete AlgoVault workflow: regime detection, trade call, then arb check for the same asset. Maximum context for one decision.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal", "scan_funding_arb"],
+    "prompt": "For SOL: first get the market regime on 4h, then get a trade call on 15m, then check if there are any funding arb opportunities. Give me a combined recommendation based on all three.",
+    "pattern": "full pipeline composition"
+  },
+  {
+    "slug": "multi-timeframe-confirmation",
+    "name": "Multi-Timeframe Confirmation",
+    "description": "Get trade calls on multiple timeframes for the same asset. Only act when all timeframes agree on direction.",
+    "difficulty": "Advanced",
+    "tools": ["get_trade_signal"],
+    "prompt": "Get trade calls for ETH on the 5m, 15m, and 1h timeframes. Only tell me to trade if all three agree on the same direction (all BUY or all SELL).",
+    "pattern": "multi-timeframe consensus"
+  },
+  {
+    "slug": "tradfi-rotation",
+    "name": "TradFi Rotation",
+    "description": "Compare regime and direction across TradFi perpetuals. Rotate into the asset with the strongest trend.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "Get the market regime and trade call for TSLA, GOLD, and SP500 on the 4h timeframe. Which one has the strongest trend with the highest confidence trade call? Recommend the best one to trade.",
+    "pattern": "cross-asset comparison"
+  },
+  {
+    "slug": "risk-gated-entry",
+    "name": "Risk-Gated Entry",
+    "description": "Only enter trades when both confidence and regime alignment pass your risk filters. Skip everything else.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "Check BTC regime on 4h, then get a trade call on 15m. Only recommend entry if confidence is 75% or higher AND the regime is TRENDING (not VOLATILE or RANGING). Otherwise say 'no trade'.",
+    "pattern": "dual risk filter"
+  },
+  {
+    "slug": "funding-sentiment-dashboard",
+    "name": "Funding Sentiment Dashboard",
+    "description": "Get market regime for major assets and use the cross-venue funding sentiment to gauge overall market bias.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime"],
+    "prompt": "Get the market regime for BTC, ETH, and SOL on the 4h timeframe. Summarize the cross-venue funding sentiment for each. Is the overall market leaning bullish or bearish based on where funding is concentrated?",
+    "pattern": "macro sentiment aggregation"
+  },
+  {
+    "slug": "contrarian-meme-scanner",
+    "name": "Contrarian Meme Scanner",
+    "description": "Scan lower-tier assets for contrarian setups: high-confidence SELL calls during an uptrend may signal crowded longs about to unwind.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "Get the market regime for DOGE, SHIB, PEPE, WIF, and BONK on 4h. For any that are TRENDING_UP, get a trade call on 15m. Flag any that return SELL with confidence above 70% — those might be crowded longs ready to unwind.",
+    "pattern": "contrarian divergence detection"
+  },
+  {
+    "slug": "divergence-detector",
+    "name": "Divergence Detector",
+    "description": "Compare trade call direction vs market regime. When they disagree, flag it as a high-risk divergence.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "For BTC and ETH: get the market regime on 4h and a trade call on 15m. If the trade call says BUY but the regime is TRENDING_DOWN (or vice versa), flag it as a divergence with a risk warning.",
+    "pattern": "signal-regime divergence"
+  },
+  {
+    "slug": "hourly-digest-bot",
+    "name": "Hourly Digest Bot",
+    "description": "Build an automated digest: scan all tier-1 and tier-2 assets every hour, summarize trade calls and market regime into a brief report.",
+    "difficulty": "Advanced",
+    "tools": ["get_trade_signal", "get_market_regime"],
+    "prompt": "Scan BTC, ETH, SOL, AVAX, LINK, DOGE, XRP, ADA for trade calls on 1h. Also get the market regime for BTC and ETH on 4h. Summarize as a brief market digest: how many BUYs vs SELLs, overall regime, and top 3 highest-confidence calls.",
+    "pattern": "periodic digest, notification-ready"
+  },
+  {
+    "slug": "hedging-advisor",
+    "name": "Hedging Advisor",
+    "description": "You hold a long ETH position. Check regime and trade call — if both turn bearish, look for a funding arb to hedge via the cheaper venue.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal", "scan_funding_arb"],
+    "prompt": "I'm currently long ETH. Get the market regime on 4h and a trade call on 1h. If both are bearish, scan funding arb for ETH and tell me which venue has the cheapest short to hedge my position.",
+    "pattern": "defensive hedging"
+  },
+  {
+    "slug": "volatility-breakout-watch",
+    "name": "Volatility Breakout Watch",
+    "description": "Use regime detection as a screener: find assets in VOLATILE regime with high confidence — these are breakout candidates. Then get trade call for direction.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime", "get_trade_signal"],
+    "prompt": "Check the market regime for BTC, ETH, SOL, AVAX, LINK, and DOGE on 4h. For any in VOLATILE regime with confidence above 70%, get a trade call on 5m. Those are potential breakout trades.",
+    "pattern": "regime as screener"
+  },
+  {
+    "slug": "cross-asset-correlation",
+    "name": "Cross-Asset Correlation",
+    "description": "Get trade calls for BTC, ETH, SOL simultaneously. If all say SELL, it's a macro risk-off signal, not just one asset.",
+    "difficulty": "Advanced",
+    "tools": ["get_trade_signal"],
+    "prompt": "Get trade calls for BTC, ETH, and SOL on the 1h timeframe. If all three say the same direction, flag it as a market-wide move. If they disagree, note which ones are diverging.",
+    "pattern": "correlation / macro signal"
+  },
+  {
+    "slug": "funding-cash-and-carry",
+    "name": "Funding Cash-and-Carry",
+    "description": "Find a funding arb spread, then get a trade call on the long side. If the trade call agrees with the long direction, you have double conviction.",
+    "difficulty": "Advanced",
+    "tools": ["scan_funding_arb", "get_trade_signal"],
+    "prompt": "Scan funding arb with minimum 10 bps spread. For the top opportunity, get a trade call for the asset on 15m. If the trade call agrees with the long side of the arb, flag it as a high-conviction cash-and-carry setup.",
+    "pattern": "arb + directional alignment"
+  },
+  {
+    "slug": "weekend-vs-weekday-patterns",
+    "name": "Weekend vs Weekday Patterns",
+    "description": "Schedule trade calls every 4 hours, log results over time. Compare weekend vs weekday regime patterns to find exploitable edges.",
+    "difficulty": "Research",
+    "tools": ["get_trade_signal", "get_market_regime"],
+    "prompt": "Every 4 hours, get a trade call for BTC on 4h and log the regime, direction, and confidence. After a week, compare weekend vs weekday patterns. Are weekends more RANGING? Do SELL calls cluster on Sundays?",
+    "pattern": "data collection, research"
+  },
+  {
+    "slug": "agent-portfolio-rebalance",
+    "name": "Agent Portfolio Rebalance",
+    "description": "Daily regime check for each asset in your portfolio. Shift allocation toward TRENDING assets, reduce exposure to VOLATILE/RANGING positions.",
+    "difficulty": "Advanced",
+    "tools": ["get_market_regime"],
+    "prompt": "My portfolio holds BTC, ETH, SOL, AVAX, and LINK. Get the market regime for each on the 1d timeframe. Recommend which ones to overweight (TRENDING) and which to underweight (VOLATILE or RANGING).",
+    "pattern": "regime-based portfolio allocation"
+  },
+  {
+    "slug": "smart-dca-bot",
+    "name": "Smart DCA Bot",
+    "description": "Dollar-cost averaging, enhanced: skip buys when the trade call says SELL with high confidence. Only DCA when direction is neutral or favorable.",
+    "difficulty": "Advanced",
+    "tools": ["get_trade_signal"],
+    "prompt": "I DCA into BTC every day. Before today's buy, get a trade call on the 4h timeframe. If it says SELL with confidence above 70%, skip today's buy and wait. Otherwise proceed normally.",
+    "pattern": "strategy enhancement, DCA optimization"
+  },
+  {
+    "slug": "multi-agent-war-room",
+    "name": "Multi-Agent War Room",
+    "description": "Three specialized agents, one coordinator. Agent A: regime, Agent B: trade calls, Agent C: funding arbs. Coordinator synthesizes all three.",
+    "difficulty": "Expert",
+    "tools": ["get_market_regime", "get_trade_signal", "scan_funding_arb"],
+    "prompt": "Set up three agents: Agent A gets market regime for BTC, ETH, SOL on 4h. Agent B gets trade calls for the same assets on 15m. Agent C scans funding arb for spreads above 8 bps. Combine all results into a single dashboard showing: regime, direction, confidence, and best arb for each asset.",
+    "pattern": "multi-agent orchestration"
+  }
+]

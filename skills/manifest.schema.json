@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/AlgoVaultLabs/algovault-skills/skills/manifest.schema.json",
+  "title": "AlgoVault Skills Manifest",
+  "description": "Single source of truth for the 20 Skills shipped in the algovault-skills plugin. Generator (scripts/gen-skill.mjs) emits one skills/<slug>/SKILL.md per entry.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["slug", "name", "description", "difficulty", "tools", "prompt", "pattern"],
+    "additionalProperties": false,
+    "properties": {
+      "slug": {
+        "type": "string",
+        "description": "Kebab-case identifier; becomes directory name and UTM campaign value.",
+        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+        "minLength": 3,
+        "maxLength": 60
+      },
+      "name": {
+        "type": "string",
+        "description": "Human-readable Skill title (verbatim from docs.html h3).",
+        "minLength": 3,
+        "maxLength": 80
+      },
+      "description": {
+        "type": "string",
+        "description": "One-sentence summary (verbatim from docs.html card paragraph). The generator appends tool sequence + difficulty.",
+        "minLength": 10,
+        "maxLength": 200
+      },
+      "difficulty": {
+        "type": "string",
+        "enum": ["Beginner", "Intermediate", "Advanced", "Research", "Expert"]
+      },
+      "tools": {
+        "type": "array",
+        "description": "MCP tool names invoked by this Skill, in call order.",
+        "minItems": 1,
+        "maxItems": 5,
+        "items": {
+          "type": "string",
+          "enum": ["get_market_regime", "get_trade_signal", "scan_funding_arb"]
+        }
+      },
+      "prompt": {
+        "type": "string",
+        "description": "Verbatim example prompt from the docs card.",
+        "minLength": 5,
+        "maxLength": 1000
+      },
+      "pattern": {
+        "type": "string",
+        "description": "The 'Pattern:' annotation from the docs card footer (e.g. 'conditional chaining', 'multi-agent orchestration').",
+        "minLength": 3,
+        "maxLength": 80
+      }
+    }
+  }
+}

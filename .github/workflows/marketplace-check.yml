@@ -1,0 +1,68 @@
+name: Marketplace Health Check
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # daily 08:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify repo + plugin.json still valid
+        run: |
+          gh repo view AlgoVaultLabs/algovault-skills --json name,visibility,defaultBranchRef \
+            | jq -e '.name == "algovault-skills" and .visibility == "PUBLIC"'
+          jq -e '.name == "algovault-skills"' .claude-plugin/plugin.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify MCP server reachable
+        run: |
+          # Same handshake as scripts/skills_preflight.sh
+          ACCEPT="application/json, text/event-stream"
+          curl -fsS -D /tmp/init.h -X POST https://api.algovault.com/mcp \
+            -H "Content-Type: application/json" -H "Accept: $ACCEPT" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"marketplace-check","version":"0"}}}' \
+            >/dev/null
+          SID=$(grep -i '^mcp-session-id:' /tmp/init.h | tr -d '\r' | awk '{print $2}')
+          test -n "$SID"
+          curl -fsS -X POST https://api.algovault.com/mcp \
+            -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
+            -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null
+          TOOL_COUNT=$(curl -fsS -X POST https://api.algovault.com/mcp \
+            -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | sed -n 's/^data: //p' | head -1 | jq -r '.result.tools | length')
+          test "$TOOL_COUNT" = "3"
+
+      - name: Verify Smithery listing (if applicable)
+        continue-on-error: true
+        run: |
+          npx -y @smithery/cli search algovault-skills 2>&1 | tee /tmp/smithery.log
+          if grep -q algovault-skills /tmp/smithery.log; then
+            echo "SMITHERY: LIVE"
+          else
+            echo "SMITHERY: NOT_LISTED (manual submission may be pending)"
+          fi
+
+      - name: Telegram alert on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "WARN: Telegram secrets not configured; cannot alert"
+            exit 0
+          fi
+          MSG="🟡 AlgoVault Alert%0A%0Aalgovault-skills marketplace-check FAILED at $(date -u +%Y-%m-%dT%H:%M:%SZ)%0Acheck: gh run view ${{ github.run_id }}"
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data "text=${MSG}" >/dev/null

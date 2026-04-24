@@ -1,0 +1,23 @@
+{
+  "name": "@algovaultlabs/skills",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "20 Agent Skills over AlgoVault MCP",
+  "homepage": "https://algovault.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlgoVaultLabs/algovault-skills.git"
+  },
+  "license": "MIT",
+  "author": "AlgoVault Labs",
+  "scripts": {
+    "preflight": "bash scripts/skills_preflight.sh",
+    "gen": "node scripts/gen-skill.mjs",
+    "gen:dry": "node scripts/gen-skill.mjs --dry-run",
+    "test": "node --test tests/smoke"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

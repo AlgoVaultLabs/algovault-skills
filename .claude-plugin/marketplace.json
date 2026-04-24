@@ -1,0 +1,15 @@
+{
+  "name": "algovault-skills",
+  "owner": "AlgoVaultLabs",
+  "plugins": [
+    {
+      "name": "algovault-skills",
+      "source": ".",
+      "description": "20 Agent Skills over AlgoVault MCP — invoke composite verdict, regime detection, and cross-venue funding arbitrage from any Claude Code or Cowork session.",
+      "version": "0.1.0",
+      "author": "AlgoVault Labs",
+      "homepage": "https://algovault.com",
+      "license": "MIT"
+    }
+  ]
+}

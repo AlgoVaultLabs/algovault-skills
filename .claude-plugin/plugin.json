@@ -1,0 +1,16 @@
+{
+  "name": "algovault-skills",
+  "version": "0.1.0",
+  "description": "20 Agent Skills for AlgoVault MCP — composite verdicts, regime, cross-venue arb",
+  "homepage": "https://algovault.com",
+  "repository": "https://github.com/AlgoVaultLabs/algovault-skills",
+  "license": "MIT",
+  "author": "AlgoVault Labs",
+  "mcpServers": {
+    "algovault": {
+      "url": "https://api.algovault.com/mcp",
+      "transport": "streamable-http"
+    }
+  },
+  "skills": "./skills"
+}

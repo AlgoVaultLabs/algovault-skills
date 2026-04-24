@@ -50,8 +50,10 @@ Live track record (PFE Win Rate + cumulative call count, updated continuously):
 ## How attribution works
 
 Every Skill invocation sends `X-AlgoVault-Skill-Slug: <slug>` to the MCP server. We aggregate
-these in a public counter at `https://algovault.com/analytics/skills` so you can see which
-Skills drove which call volume — no user-level data, just per-Skill totals.
+these in an admin-only counter inside `/dashboard` on `api.algovault.com` (per-Skill funnel
+data is competitive intel — moved internal 2026-04-24). The public moat layer remains the
+aggregate track record at <https://algovault.com/track-record> (Merkle-verified PFE WR +
+signal/batch counts).
 
 ## Repo layout
 

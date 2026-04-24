@@ -3,8 +3,13 @@
 #
 # Per Plan A4: replaces the spec's reference to verify_phase2.sh (which does
 # not exist on the host) with 4 concrete checks against the live deployment.
-# Run after C6 deploys to Hetzner; expects the skill-invocations table + new
-# /analytics/skills route to be live.
+# Run after deploys to Hetzner; expects the skill-invocations table and the
+# admin-gated /dashboard/api/skills-analytics endpoint to be live.
+#
+# (UPDATED 2026-04-24): The per-Skill page moved from public
+# `algovault.com/analytics/skills` to admin-only `/dashboard` Skills section.
+# Check (iv) now hits the admin JSON endpoint with the Bearer key (export
+# ALGOVAULT_ADMIN_KEY before running, or check (iv) is skipped with a notice).
 #
 # Usage:  bash scripts/verify-c6-no-regressions.sh [HOST_IP]
 # Default HOST_IP: 204.168.185.24
@@ -46,11 +51,21 @@ TOOL_COUNT=$(curl -fsS -X POST https://api.algovault.com/mcp \
 test "$TOOL_COUNT" = "3" || fail "tools/list returned $TOOL_COUNT (expected 3)"
 echo "  [c6-check] MCP tools/list: 3 tools"
 
-# (iv) /analytics/skills public page renders all 20 slugs
-PAGE=$(curl -fsS https://algovault.com/analytics/skills 2>/dev/null)
-test -n "$PAGE" || fail "/analytics/skills returned empty"
-SLUG_HITS=$(echo "$PAGE" | grep -cE 'quick-btc-check|portfolio-scanner|regime-aware-trading|funding-arb-monitor|full-3-tool-pipeline|multi-timeframe-confirmation|tradfi-rotation|risk-gated-entry|funding-sentiment-dashboard|contrarian-meme-scanner|divergence-detector|hourly-digest-bot|hedging-advisor|volatility-breakout-watch|cross-asset-correlation|funding-cash-and-carry|weekend-vs-weekday-patterns|agent-portfolio-rebalance|smart-dca-bot|multi-agent-war-room')
-test "$SLUG_HITS" -ge 20 || fail "/analytics/skills missing slugs (got $SLUG_HITS slug-line hits, expected ≥20)"
-echo "  [c6-check] /analytics/skills: 20/20 slugs rendered"
+# (iv) Admin-gated /dashboard/api/skills-analytics returns all 20 slugs
+# Public page (algovault.com/analytics/skills) was removed 2026-04-24 — moved
+# internal because per-Skill funnel data is competitive intel.
+if [ -z "${ALGOVAULT_ADMIN_KEY:-}" ]; then
+  echo "  [c6-check] (iv) SKIP: ALGOVAULT_ADMIN_KEY not in env — admin endpoint check skipped"
+else
+  SLUGS=$(curl -fsS -H "Authorization: Bearer $ALGOVAULT_ADMIN_KEY" \
+    https://api.algovault.com/dashboard/api/skills-analytics 2>/dev/null \
+    | jq -r '.perSlug | length' 2>/dev/null || echo "0")
+  test "$SLUGS" = "20" || fail "admin /dashboard/api/skills-analytics returned $SLUGS slugs (expected 20)"
+  echo "  [c6-check] /dashboard/api/skills-analytics (admin): 20/20 slugs"
+fi
+# Also confirm the public URL is gone (404)
+PUB_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://algovault.com/analytics/skills)
+test "$PUB_CODE" = "404" || fail "public /analytics/skills should return 404 (got $PUB_CODE — was it not removed?)"
+echo "  [c6-check] public /analytics/skills: 404 (correctly removed)"
 
 echo "VERIFY_C6_PASS"

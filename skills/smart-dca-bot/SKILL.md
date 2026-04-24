@@ -25,7 +25,10 @@ Your agent decides whether and how to act on the thesis.
 1. **`get_trade_signal`** — invoke with appropriate parameters; pass header `X-AlgoVault-Skill-Slug: smart-dca-bot`.
 
 Each call sends `X-AlgoVault-Skill-Slug: smart-dca-bot` so the invocation rolls up
-on the public per-Skill counter at <https://algovault.com/analytics/skills>.
+on the per-Skill counter inside the AlgoVault internal dashboard
+(`/dashboard` on `api.algovault.com` — admin-only). Per-Skill funnel data is
+treated as competitive intel; only aggregate track-record numbers are public
+at <https://algovault.com/track-record>.
 
 ## What you get back (`_algovault` metadata block)
 

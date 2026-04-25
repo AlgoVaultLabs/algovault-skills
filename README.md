@@ -20,6 +20,22 @@ claude plugin install AlgoVaultLabs/algovault-skills
 Live track record (PFE Win Rate + cumulative call count, updated continuously):
 **https://algovault.com/track-record**
 
+## Integrations
+
+End-to-end tutorials pairing AlgoVault's analytics with each major exchange's
+agent execution kit. AlgoVault returns the verdict; the agent and its risk
+policy decide what (if anything) to execute. **All demos run on testnet/demo
+mode — zero real-money risk.**
+
+| # | Exchange | Tutorial | Demo |
+|---|---|---|---|
+| 01 | Binance | [coming soon — INTEGRATIONS-W1 C2](docs/integrations/binance.md) | [coming soon](examples/binance/demo.mjs) |
+| 02 | OKX | [coming soon — INTEGRATIONS-W1 C3](docs/integrations/okx.md) | [coming soon](examples/okx/demo.mjs) |
+| 03 | Bybit | [coming soon — INTEGRATIONS-W1 C4](docs/integrations/bybit.md) | [coming soon](examples/bybit/demo.mjs) |
+| 04 | Bitget | [coming soon — INTEGRATIONS-W1 C5](docs/integrations/bitget.md) | [coming soon](examples/bitget/demo.mjs) |
+
+Distribution surface tracker: [`docs/INTEGRATIONS_DISTRIBUTION.md`](docs/INTEGRATIONS_DISTRIBUTION.md).
+
 ## The 20 Skills
 
 <!-- SKILLS_TABLE -->

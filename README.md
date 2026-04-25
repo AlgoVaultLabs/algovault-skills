@@ -27,12 +27,20 @@ agent execution kit. AlgoVault returns the verdict; the agent and its risk
 policy decide what (if anything) to execute. **All demos run on testnet/demo
 mode — zero real-money risk.**
 
-| # | Exchange | Tutorial | Demo |
-|---|---|---|---|
-| 01 | Binance | [coming soon — INTEGRATIONS-W1 C2](docs/integrations/binance.md) | [coming soon](examples/binance/demo.mjs) |
-| 02 | OKX | [coming soon — INTEGRATIONS-W1 C3](docs/integrations/okx.md) | [coming soon](examples/okx/demo.mjs) |
-| 03 | Bybit | [coming soon — INTEGRATIONS-W1 C4](docs/integrations/bybit.md) | [coming soon](examples/bybit/demo.mjs) |
-| 04 | Bitget | [coming soon — INTEGRATIONS-W1 C5](docs/integrations/bitget.md) | [coming soon](examples/bitget/demo.mjs) |
+| # | Exchange | Tutorial | Demo | Mirror |
+|---|---|---|---|---|
+| 01 | Binance | [`docs/integrations/binance.md`](docs/integrations/binance.md) | [`examples/binance/demo.mjs`](examples/binance/demo.mjs) | [algovault.com/docs/integrations/binance](https://algovault.com/docs/integrations/binance) |
+| 02 | OKX | [`docs/integrations/okx.md`](docs/integrations/okx.md) | [`examples/okx/demo.mjs`](examples/okx/demo.mjs) | [algovault.com/docs/integrations/okx](https://algovault.com/docs/integrations/okx) |
+| 03 | Bybit | [`docs/integrations/bybit.md`](docs/integrations/bybit.md) | [`examples/bybit/demo.mjs`](examples/bybit/demo.mjs) | [algovault.com/docs/integrations/bybit](https://algovault.com/docs/integrations/bybit) |
+| 04 | Bitget | [`docs/integrations/bitget.md`](docs/integrations/bitget.md) | [`examples/bitget/demo.mjs`](examples/bitget/demo.mjs) | [algovault.com/docs/integrations/bitget](https://algovault.com/docs/integrations/bitget) |
+
+Quick install + run any demo:
+
+```bash
+claude plugin install AlgoVaultLabs/algovault-skills
+git clone https://github.com/AlgoVaultLabs/algovault-skills && cd algovault-skills && npm install
+BINANCE_TESTNET=true node examples/binance/demo.mjs   # or OKX_DEMO=true / BYBIT_TESTNET=true / BITGET_DEMO=true
+```
 
 Distribution surface tracker: [`docs/INTEGRATIONS_DISTRIBUTION.md`](docs/INTEGRATIONS_DISTRIBUTION.md).
 

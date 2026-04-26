@@ -233,16 +233,5 @@
     ],
     "prompt": "Set up three agents: Agent A gets market regime for BTC, ETH, SOL on 4h. Agent B gets trade calls for the same assets on 15m. Agent C scans funding arb for spreads above 8 bps. Combine all results into a single dashboard showing: regime, direction, confidence, and best arb for each asset.",
     "pattern": "multi-agent orchestration"
-  },
-  {
-    "slug": "final-e2e-canary",
-    "name": "Final E2E Canary",
-    "description": "Final round of cross-repo CI verification.",
-    "difficulty": "Beginner",
-    "tools": [
-      "get_trade_signal"
-    ],
-    "prompt": "canary",
-    "pattern": "canary"
   }
 ]

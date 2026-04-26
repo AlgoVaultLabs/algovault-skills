@@ -1,8 +1,9 @@
 # AlgoVault × Bitget — Build Verifiable AI Trading Agents
 
-> **89.5% PFE Win Rate · 54,629+ calls · 15+ Merkle-verified on-chain batches.**
+> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
-> *Snapshot taken 2026-04-25 — current numbers live at https://algovault.com/track-record*
+> *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
 AlgoVault MCP gives your agent a **composite verdict** in one call — direction, confidence, regime, and cross-venue funding/sentiment context — backed by a publicly auditable record anchored to Base L2. Pair it with Bitget's [Agent Hub](https://github.com/BitgetLimited/agent_hub) (and its agent-native AI account, **GetClaw**) and your agent has both the analytics brain and an execution venue purpose-built for autonomous AI trading.
 
@@ -127,7 +128,8 @@ See `examples/bitget/README.md` for the full real-money checklist + the Bitget A
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- **89.5% PFE Win Rate · 54,629+ calls · 15+ on-chain batches** → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
+- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
 
 ## Install
 

@@ -17,9 +17,10 @@
 
 # AlgoVault × {{exchange_name}} — Build Verifiable AI Trading Agents
 
-> **89.5% PFE Win Rate · 54,629+ calls · 15+ Merkle-verified on-chain batches.**
+> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →]({{utm_url_hero}})
-> *Snapshot taken 2026-04-25 — current numbers live at https://algovault.com/track-record*
+> *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
 AlgoVault MCP gives your agent a **composite verdict** in one call — direction, confidence, regime, and cross-venue funding/sentiment context — backed by a publicly auditable record anchored to Base L2. Pair it with the {{exchange_name}} {{exchange_kit_name}} and your agent has both the analytics brain and the execution venue.
 
@@ -110,7 +111,8 @@ See `examples/{{exchange_slug}}/README.md` for the full real-money checklist. **
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- **89.5% PFE Win Rate · 54,629+ calls · 15+ on-chain batches** → [view live track record]({{utm_url_footer}})
+- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record]({{utm_url_footer}})
 
 ## Install
 

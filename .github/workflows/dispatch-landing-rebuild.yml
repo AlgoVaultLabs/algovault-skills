@@ -1,0 +1,28 @@
+name: Trigger Landing Rebuild
+
+# WEBSITE-REFRESH-W1 C8 — fires repository_dispatch on crypto-quant-signal-mcp
+# whenever a manifest in this repo changes, so that repo's regenerate-landing.yml
+# rebuilds the discoverability surfaces (skills.html, llms.txt, READMEs, etc).
+#
+# Requires a PAT with `repo` scope on AlgoVaultLabs/crypto-quant-signal-mcp,
+# stored as `MCP_REPO_DISPATCH_TOKEN` secret on this repo.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skills/manifest.json'
+      - 'integrations/manifest.json'
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fire repository_dispatch on crypto-quant-signal-mcp
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.MCP_REPO_DISPATCH_TOKEN }}
+          repository: AlgoVaultLabs/crypto-quant-signal-mcp
+          event-type: manifest-changed
+          client-payload: '{"source_repo": "algovault-skills", "source_sha": "${{ github.sha }}", "source_actor": "${{ github.actor }}"}'

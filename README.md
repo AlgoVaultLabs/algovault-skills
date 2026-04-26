@@ -27,12 +27,14 @@ agent execution kit. AlgoVault returns the verdict; the agent and its risk
 policy decide what (if anything) to execute. **All demos run on testnet/demo
 mode — zero real-money risk.**
 
+<!-- BUILD:README_INTEGRATIONS_TABLE -->
 | # | Exchange | Tutorial | Demo | Mirror |
 |---|---|---|---|---|
 | 01 | Binance | [`docs/integrations/binance.md`](docs/integrations/binance.md) | [`examples/binance/demo.mjs`](examples/binance/demo.mjs) | [algovault.com/docs/integrations/binance](https://algovault.com/docs/integrations/binance) |
 | 02 | OKX | [`docs/integrations/okx.md`](docs/integrations/okx.md) | [`examples/okx/demo.mjs`](examples/okx/demo.mjs) | [algovault.com/docs/integrations/okx](https://algovault.com/docs/integrations/okx) |
 | 03 | Bybit | [`docs/integrations/bybit.md`](docs/integrations/bybit.md) | [`examples/bybit/demo.mjs`](examples/bybit/demo.mjs) | [algovault.com/docs/integrations/bybit](https://algovault.com/docs/integrations/bybit) |
 | 04 | Bitget | [`docs/integrations/bitget.md`](docs/integrations/bitget.md) | [`examples/bitget/demo.mjs`](examples/bitget/demo.mjs) | [algovault.com/docs/integrations/bitget](https://algovault.com/docs/integrations/bitget) |
+<!-- /BUILD:README_INTEGRATIONS_TABLE -->
 
 Quick install + run any demo:
 
@@ -47,6 +49,7 @@ Distribution surface tracker: [`docs/INTEGRATIONS_DISTRIBUTION.md`](docs/INTEGRA
 ## The 20 Skills
 
 <!-- SKILLS_TABLE -->
+<!-- BUILD:README_SKILLS_TABLE -->
 | # | Slug | Name | Difficulty | Tools |
 |---|---|---|---|---|
 | 01 | [`quick-btc-check`](skills/quick-btc-check/SKILL.md) | Quick BTC Check | Beginner | `get_trade_signal` |
@@ -69,6 +72,7 @@ Distribution surface tracker: [`docs/INTEGRATIONS_DISTRIBUTION.md`](docs/INTEGRA
 | 18 | [`agent-portfolio-rebalance`](skills/agent-portfolio-rebalance/SKILL.md) | Agent Portfolio Rebalance | Advanced | `get_market_regime` |
 | 19 | [`smart-dca-bot`](skills/smart-dca-bot/SKILL.md) | Smart DCA Bot | Advanced | `get_trade_signal` |
 | 20 | [`multi-agent-war-room`](skills/multi-agent-war-room/SKILL.md) | Multi-Agent War Room | Expert | `get_market_regime`, `get_trade_signal`, `scan_funding_arb` |
+<!-- /BUILD:README_SKILLS_TABLE -->
 <!-- /SKILLS_TABLE -->
 
 ## How attribution works

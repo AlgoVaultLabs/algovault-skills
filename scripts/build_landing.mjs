@@ -86,7 +86,9 @@ function genSkillsGrid() {
     const num = String(i + 1).padStart(2, '0');
     const badge = DIFFICULTY_BADGE[e.difficulty] || 'bg-gray-500/10 text-gray-400 border-gray-500/30';
     const tools = e.tools.map((t) => `<code class="text-xs">${t}</code>`).join(' &middot; ');
+    // WEBSITE-REFRESH-W1 follow-up: fire Plausible "Skill Install Click" on click.
     return `      <a href="https://github.com/AlgoVaultLabs/algovault-skills/tree/main/skills/${e.slug}?utm_source=skills_page&utm_medium=card&utm_campaign=skill-install-${e.slug}"
+         onclick="if(window.plausible)plausible('Skill Install Click',{props:{slug:'${e.slug}',surface:'skills_page'}})"
          class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
         <div class="flex items-center gap-3 mb-2">
           <span class="text-gold-400 font-mono text-xs font-bold bg-gold-400/10 px-2 py-0.5 rounded">${num}</span>
@@ -101,7 +103,11 @@ function genSkillsGrid() {
 }
 
 function genUseCasesCards() {
+  // WEBSITE-REFRESH-W1 follow-up: fire Plausible "Integration View" on click
+  // (source=use-cases-card; the page-load detector in track-record-proxy.js
+  // separately fires source=direct when users land on the mirror page directly).
   return integrations.map((e) => `      <a href="${e.mirror_url_web.replace('https://algovault.com', '')}?utm_source=index&utm_medium=use-cases-card&utm_campaign=integration-${e.slug}"
+         onclick="if(window.plausible)plausible('Integration View',{props:{exchange:'${e.slug}',source:'use-cases-card'}})"
          class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
         <div class="text-3xl mb-3" aria-hidden="true">${e.icon}</div>
         <h3 class="text-white font-semibold text-base mb-1">${e.name} &times; AlgoVault</h3>

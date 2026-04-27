@@ -58,7 +58,7 @@
     "status": "LIVE",
     "launch_date": "2026-04-22",
     "icon": "⚡",
-    "logo": { "path": "/assets/logos/bybit.svg", "invert": true },
+    "logo": { "path": "/assets/logos/bybit.png", "invert": false },
     "tagline": "Composite verdict + Bybit's official MCP for Linear Perpetual + conditional orders",
     "recipes": ["multi-tf-consensus-perp-entry", "volatility-breakout-conditional", "hedge-aware-dca"]
   },

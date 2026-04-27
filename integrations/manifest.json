@@ -16,6 +16,7 @@
     "status": "LIVE",
     "launch_date": "2026-03-03",
     "icon": "🏆",
+    "logo": { "path": "/assets/logos/binance.svg", "invert": false },
     "tagline": "Composite verdict + official Binance Skills Hub for Spot Testnet execution",
     "recipes": ["regime-gated-dca-btc", "confidence-filtered-eth-swing", "funding-arb-cash-and-carry"]
   },
@@ -36,6 +37,7 @@
     "status": "LIVE",
     "launch_date": "2026-03-15",
     "icon": "🎯",
+    "logo": { "path": "/assets/logos/okx.svg", "invert": true },
     "tagline": "Composite verdict + 83 OKX execution tools across spot, swap, futures, options, grid bots",
     "recipes": ["multi-asset-regime-grid-bot", "funding-arb-options-pair", "risk-gated-confidence-floor"]
   },
@@ -56,6 +58,7 @@
     "status": "LIVE",
     "launch_date": "2026-04-22",
     "icon": "⚡",
+    "logo": { "path": "/assets/logos/bybit.svg", "invert": true },
     "tagline": "Composite verdict + Bybit's official MCP for Linear Perpetual + conditional orders",
     "recipes": ["multi-tf-consensus-perp-entry", "volatility-breakout-conditional", "hedge-aware-dca"]
   },
@@ -76,6 +79,7 @@
     "status": "LIVE",
     "launch_date": "2026-02-13",
     "icon": "🤖",
+    "logo": { "path": "/assets/logos/bitget.png", "invert": false },
     "tagline": "Composite verdict + GetClaw agent-native execution inside a dedicated AI account",
     "recipes": ["nlp-verdict-getclaw", "five-bitget-skills-complement", "agent-native-rebalance"]
   }

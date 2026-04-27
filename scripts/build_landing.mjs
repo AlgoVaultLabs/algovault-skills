@@ -15,12 +15,13 @@
  *
  *   landing/skills.html              [BUILD:SKILLS_GRID]
  *   landing/index.html               [BUILD:USE_CASES_CARDS]
+ *   landing/integrations.html        [BUILD:INTEGRATIONS_INDEX_GRID]
  *   landing/llms.txt                 [BUILD:LLMS_INTEGRATIONS_LIST] [BUILD:LLMS_SKILLS_LIST]
  *   landing/llms-full.txt            [BUILD:LLMS_FULL_INTEGRATIONS] [BUILD:LLMS_FULL_SKILLS]
  *   README.md                        [BUILD:README_INTEGRATIONS_TABLE] [BUILD:README_SKILLS_TABLE]
  *   ../algovault-skills/README.md    [BUILD:README_INTEGRATIONS_TABLE] [BUILD:README_SKILLS_TABLE]
  *
- * Total: 10 placeholder blocks across 6 files.
+ * Total: 11 placeholder blocks across 7 files.
  *
  * Usage:
  *   node scripts/build_landing.mjs                # default --target=../crypto-quant-signal-mcp
@@ -102,19 +103,55 @@ function genSkillsGrid() {
   }).join('\n');
 }
 
+function genIntegrationsIndexGrid() {
+  // WEBSITE-REFRESH-CLEANUP-W1 R4 — manifest-driven cards for the standalone
+  // /integrations index page (mirrors the /skills pattern: future Nth
+  // exchange = a manifest.json edit + this build script run).
+  // Output is byte-identical to the hand-authored block — second run = noop.
+  return integrations.map((e) => {
+    const versionSuffix = e.package_version === 'verified-2026-04-25'
+      ? ' (verified 2026-04-25)'
+      : ' ';
+    const packageDisplay = e.package_version === 'verified-2026-04-25'
+      ? e.package
+      : `${e.package}@${e.package_version}`;
+    const invertClass = e.logo.invert ? ' invert' : '';
+    return `      <a href="/docs/integrations/${e.slug}?utm_source=integrations_index&utm_medium=card&utm_campaign=integration-${e.slug}"
+         onclick="if(window.plausible)plausible('Integration View',{props:{exchange:'${e.slug}',source:'integrations_index'}})"
+         class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
+        <div class="flex items-center gap-3 mb-3">
+          <img src="${e.logo.path}" alt="${e.name} logo" class="w-10 h-10 object-contain${invertClass}">
+          <h3 class="text-white font-semibold text-base">${e.name} &times; AlgoVault</h3>
+        </div>
+        <p class="text-gray-400 text-xs mb-3">${e.tagline}.</p>
+        <p class="text-gray-600 text-xs mb-3"><code class="text-xs">${packageDisplay}</code>${versionSuffix}</p>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="text-gold-400">View tutorial &rarr;</span>
+          <a href="${e.demo_url}" class="text-steel-400 hover:text-gold-400" onclick="event.stopPropagation()">Demo &rarr;</a>
+        </div>
+      </a>`;
+  }).join('\n');
+}
+
 function genUseCasesCards() {
   // WEBSITE-REFRESH-W1 follow-up: fire Plausible "Integration View" on click
   // (source=use-cases-card; the page-load detector in track-record-proxy.js
   // separately fires source=direct when users land on the mirror page directly).
-  return integrations.map((e) => `      <a href="${e.mirror_url_web.replace('https://algovault.com', '')}?utm_source=index&utm_medium=use-cases-card&utm_campaign=integration-${e.slug}"
+  // WEBSITE-REFRESH-CLEANUP-W1 R5: emoji icons replaced with self-hosted exchange
+  // logos (see landing/assets/logos/README.md for provenance + nominative-fair-use
+  // policy). Trademark disclaimer rendered OUTSIDE the BUILD block in index.html.
+  return integrations.map((e) => {
+    const invertClass = e.logo.invert ? ' invert' : '';
+    return `      <a href="${e.mirror_url_web.replace('https://algovault.com', '')}?utm_source=index&utm_medium=use-cases-card&utm_campaign=integration-${e.slug}"
          onclick="if(window.plausible)plausible('Integration View',{props:{exchange:'${e.slug}',source:'use-cases-card'}})"
          class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
-        <div class="text-3xl mb-3" aria-hidden="true">${e.icon}</div>
+        <img src="${e.logo.path}" alt="${e.name} logo" class="w-10 h-10 object-contain mb-3${invertClass}">
         <h3 class="text-white font-semibold text-base mb-1">${e.name} &times; AlgoVault</h3>
         <p class="text-gray-500 text-xs mb-3">${e.tagline}.</p>
         <p class="text-gray-600 text-xs mb-3"><code class="text-xs">${e.package}${e.package_version === 'verified-2026-04-25' ? '' : '@' + e.package_version}</code> ${e.package_version === 'verified-2026-04-25' ? '(verified ' + e.package_version.replace('verified-', '') + ')' : ''}</p>
         <span class="text-gold-400 text-xs">View tutorial &rarr;</span>
-      </a>`).join('\n')
+      </a>`;
+  }).join('\n')
     .replace(/\s+\(verified \)/g, '');
 }
 
@@ -175,6 +212,7 @@ ${skills.map((e, i) => {
 const targets = [
   { file: join(target, 'landing/skills.html'),    blocks: { SKILLS_GRID: genSkillsGrid() } },
   { file: join(target, 'landing/index.html'),     blocks: { USE_CASES_CARDS: genUseCasesCards() } },
+  { file: join(target, 'landing/integrations.html'), blocks: { INTEGRATIONS_INDEX_GRID: genIntegrationsIndexGrid() } },
   { file: join(target, 'landing/llms.txt'),       blocks: { LLMS_INTEGRATIONS_LIST: genLlmsIntegrationsList(), LLMS_SKILLS_LIST: genLlmsSkillsList() } },
   { file: join(target, 'landing/llms-full.txt'),  blocks: { LLMS_FULL_INTEGRATIONS: genLlmsFullIntegrations(), LLMS_FULL_SKILLS: genLlmsFullSkills() } },
   { file: join(target, 'README.md'),              blocks: { README_INTEGRATIONS_TABLE: genReadmeIntegrationsTable(), README_SKILLS_TABLE: genReadmeSkillsTable() } },

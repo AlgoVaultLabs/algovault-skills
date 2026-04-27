@@ -11,7 +11,7 @@
       "repo_url", "docs_url", "demo_flag",
       "tutorial_url_repo", "mirror_url_web", "demo_url",
       "devto_url", "community_submission_url",
-      "status", "launch_date", "icon", "tagline", "recipes"
+      "status", "launch_date", "icon", "logo", "tagline", "recipes"
     ],
     "additionalProperties": false,
     "properties": {
@@ -106,6 +106,23 @@
         "description": "Single emoji character used as the card icon on the landing page (no third-party logo licensing).",
         "minLength": 1,
         "maxLength": 4
+      },
+      "logo": {
+        "type": "object",
+        "description": "Self-hosted exchange logo asset for use on /integrations + Use Cases section (WEBSITE-REFRESH-CLEANUP-W1 R5). Files live in landing/assets/logos/ and are deployed to /var/www/algovault/assets/ via deploy.yml.",
+        "additionalProperties": false,
+        "required": ["path", "invert"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Web path to the logo asset (e.g. /assets/logos/binance.svg). PNG ok for fallbacks where SVG unavailable.",
+            "pattern": "^/assets/logos/[a-z][a-z0-9-]*\\.(svg|png)$"
+          },
+          "invert": {
+            "type": "boolean",
+            "description": "If true, renders with `class=\"... invert\"` to make black-on-light wordmarks visible on the dark navy theme."
+          }
+        }
       },
       "tagline": {
         "type": "string",

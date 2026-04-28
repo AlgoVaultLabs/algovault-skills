@@ -14,7 +14,7 @@ Re-fetch live numbers from `https://algovault.com/api/performance-public` immedi
 
 | Day | Date (UTC) | Exchange | Surface | Title | Status | URL after submit |
 |-----|------------|----------|---------|-------|--------|------------------|
-| 0 | 2026-04-28 | OKX | Discussion in `okx/agent-trade-kit` (Show & Tell) | Community Integration: AlgoVault MCP × OKX Agent Trade Kit (with runnable testnet demo) | **PENDING_PASTE_BACK** | _(filled when Mr.1 pastes back)_ |
+| 0 | 2026-04-28 | OKX | Discussion in `okx/agent-trade-kit` (Show & Tell) | Community Integration: AlgoVault MCP × OKX Agent Trade Kit (with runnable testnet demo) | ✅ **SUBMITTED 2026-04-28** | https://github.com/okx/agent-trade-kit/discussions/13 |
 | 1 | 2026-04-29 | Bybit | Issue in `bybit-exchange/trading-mcp` | Community Integration: AlgoVault MCP × Bybit Official Trading MCP (with runnable testnet demo) | scheduled | pending |
 | 2 | 2026-04-30 | Bitget | Issue in `BitgetLimited/agent_hub` | Community Integration: AlgoVault MCP × Bitget Agent Hub (with GetClaw demo wrapper) | scheduled | pending |
 | 3 | 2026-05-01 | Binance | PR-to-add-skill in `binance/binance-skills-hub` | Add AlgoVault MCP signal-interpretation skill | scheduled | pending |

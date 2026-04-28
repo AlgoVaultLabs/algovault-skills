@@ -42,6 +42,21 @@ jobs:
           jq -e '.name == "algovault-skills"' .claude-plugin/plugin.json
           jq -e '.mcpServers.algovault.url == "https://api.algovault.com/mcp"' .claude-plugin/plugin.json
 
+      # ───────── TEMP DIAG: env-var arrival ─────────
+      - name: TEMP DIAG — env-var byte-shape probe
+        env:
+          SMITHERY_API_KEY: ${{ secrets.SMITHERY_API_KEY }}
+        run: |
+          echo "byte length: $(printf '%s' "$SMITHERY_API_KEY" | wc -c)"
+          echo "first 5 bytes: $(printf '%s' "$SMITHERY_API_KEY" | head -c 5)"
+          echo "last 5 bytes: $(printf '%s' "$SMITHERY_API_KEY" | tail -c 5)"
+          echo "has \\r? $(printf '%s' "$SMITHERY_API_KEY" | grep -c $'\r' || echo 0)"
+          echo "has trailing \\n? $(printf '%s' "$SMITHERY_API_KEY" | tail -c 1 | od -c | head -1)"
+          echo "smithery CLI version: $(npx -y @smithery/cli@latest --version 2>&1 | tail -1)"
+          # Check if env-var actually reaches the CLI
+          echo "--- CLI auth whoami (should report token from env) ---"
+          npx -y @smithery/cli@latest auth whoami 2>&1 || true
+
       # ───────── Smithery publish (gated on API key) ─────────
       # Smithery CLI v4.x: per-skill `skill publish`, namespace via --namespace flag,
       # auth via SMITHERY_API_KEY env var. Each manifest entry maps to skills/<slug>/SKILL.md.

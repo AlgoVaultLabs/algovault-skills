@@ -1,13 +1,24 @@
 {
   "name": "algovault-skills",
-  "owner": "AlgoVaultLabs",
+  "metadata": {
+    "description": "AlgoVault Labs Skills marketplace — Agent Skills wrapping AlgoVault MCP for AI trading agents. Composite trade verdict + funding arbitrage + market regime detection across 5 exchanges, Merkle-anchored on Base L2."
+  },
+  "owner": {
+    "name": "AlgoVaultLabs",
+    "email": "support@algovault.com"
+  },
   "plugins": [
     {
       "name": "algovault-skills",
-      "source": ".",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/AlgoVaultLabs/algovault-skills.git"
+      },
       "description": "20 Agent Skills over AlgoVault MCP — invoke composite verdict, regime detection, and cross-venue funding arbitrage from any Claude Code or Cowork session.",
       "version": "0.1.0",
-      "author": "AlgoVault Labs",
+      "author": {
+        "name": "AlgoVault Labs"
+      },
       "homepage": "https://algovault.com",
       "license": "MIT"
     }

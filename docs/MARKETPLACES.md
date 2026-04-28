@@ -1,17 +1,17 @@
 # Distribution Status
 
 Canonical record of where `algovault-skills` is published.
-Last verified: 2026-04-24.
+Last verified: 2026-04-28 (DISTRIBUTION-CLOSEOUT-W1).
 
 ## Status per channel
 
 | # | Channel | Status | Notes / Action |
 |---|---|---|---|
 | 1 | [GitHub source](https://github.com/AlgoVaultLabs/algovault-skills) | **LIVE** | MIT licensed; `main` branch is the canonical source. |
-| 2 | [Smithery Registry](https://smithery.ai/skills/algovault) | **LIVE** | Published 2026-04-24 as 20 individual skills under the `algovault` namespace (Smithery CLI v4.x is per-skill, not bundle). Browse: <https://smithery.ai/skills/algovault>. Install one with `npx -y @smithery/cli skill add algovault/<slug>`. CI auto-republishes on every `git tag v*` via `.github/workflows/publish.yml` (loops over `skills/manifest.json`); `SMITHERY_API_KEY` repo secret provisioned. |
-| 3 | [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official) | **PENDING_PR** | Workflow opens a fork-based PR when `ANTHROPIC_PR_TOKEN` repo secret is set (a GitHub PAT with `public_repo` scope on a fork). Until then, manual fork + PR per the [Anthropic plugin marketplace docs](https://code.claude.com/docs/en/plugin-marketplaces). |
-| 4 | [claudemarketplaces.com](https://claudemarketplaces.com) | **MANUAL_SUBMITTED** (target) | No public submission API exists (verified `https://claudemarketplaces.com/api/` → HTTP 404 on 2026-04-24). See [SUBMIT_CLAUDEMARKETPLACES.md](./SUBMIT_CLAUDEMARKETPLACES.md) for the human-driven submission steps. |
-| 5 | [skillsmp.com](https://skillsmp.com) | **MANUAL_SUBMITTED** (target) | No public submission API exists (verified `https://skillsmp.com/api/` → HTTP 404 on 2026-04-24). See [SUBMIT_SKILLSMP.md](./SUBMIT_SKILLSMP.md) for the human-driven submission steps. |
+| 2 | [Smithery Registry](https://smithery.ai/skills/algovault) | **LIVE** | Published 2026-04-24 as 20 individual skills under the `algovault` namespace (Smithery CLI v4.x is per-skill, not bundle). Browse: <https://smithery.ai/skills/algovault>. Install one with `npx -y @smithery/cli skill add algovault/<slug>`. CI auto-republishes on every `git tag v*` via `.github/workflows/publish.yml` (loops over `skills/manifest.json`). **NOTE 2026-04-28:** `SMITHERY_API_KEY` is currently invalid (returns `401 Authentication failed`) — republish step soft-fails (`continue-on-error: true`) so distribution-closeout downstream steps still advance. Rotate the key when convenient: Smithery dashboard → API Keys → regenerate → `gh secret set SMITHERY_API_KEY --repo AlgoVaultLabs/algovault-skills`. |
+| 3 | [`anthropics/claude-plugins-official`](https://github.com/anthropics/claude-plugins-official) | **PR_OPEN** [#1632](https://github.com/anthropics/claude-plugins-official/pull/1632) **2026-04-28** | Opened from `AlgoVaultFi:add-algovault-skills` (operator's local gh auth). The publish.yml workflow has full PR-flow logic but `ANTHROPIC_PR_TOKEN` repo secret is currently invalid (`gh: Bad credentials`) — local fallback used. Rotate the PAT (classic, `public_repo` scope) when convenient and the workflow's idempotency check will recognize the open/merged PR and skip on next tag push. |
+| 4 | [claudemarketplaces.com](https://claudemarketplaces.com) | **AUTO_DISCOVERY_ACTIVE 2026-04-28** | No public `/submit` URL exists — auto-aggregator from public GitHub repos with valid `.claude-plugin/marketplace.json`. Curated/featured listing requires 500+ installs per their public docs. Our `marketplace.json` validates clean against the live `claude plugin validate` schema (3 schema errors fixed in 2026-04-28 commit; `owner`+`author` were string-shape, schema requires object-shape; `source` was string `"."`, schema requires object). |
+| 5 | [skillsmp.com](https://skillsmp.com) | **AUTO_DISCOVERY_ACTIVE 2026-04-28** | No public `/submit` URL exists — auto-aggregator from public GitHub repos with valid `.claude-plugin/` + SKILL.md frontmatter. All 20 SKILL.md files have valid YAML frontmatter (`name` + `description`) — gh-API-verified 2026-04-28. |
 
 ## Re-publish flow
 

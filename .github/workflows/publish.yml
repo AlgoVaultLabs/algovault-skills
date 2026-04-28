@@ -46,6 +46,16 @@ jobs:
       # Smithery CLI v4.x: per-skill `skill publish`, namespace via --namespace flag,
       # auth via SMITHERY_API_KEY env var. Each manifest entry maps to skills/<slug>/SKILL.md.
       - name: Publish 20 skills to Smithery (if API key present)
+        # DISTRIBUTION-CLOSEOUT-W1 R1: soft-fail on Smithery republish.
+        # Smithery is already LIVE at https://smithery.ai/skills/algovault since
+        # SKILLS-W1 v0.1.0 publish. The republish here is purely a no-op CI
+        # exercise — when SMITHERY_API_KEY rotates / expires, this step will
+        # 401 but distribution-closeout downstream steps (anthropics PR, etc)
+        # have NO dependency on Smithery republish success. Soft-fail keeps
+        # the workflow advancing while the failure remains visible in run logs
+        # for ops attention. Remove this when SMITHERY_API_KEY is rotated and
+        # the no-op republish reliably exits 0.
+        continue-on-error: true
         env:
           SMITHERY_API_KEY: ${{ secrets.SMITHERY_API_KEY }}
         run: |

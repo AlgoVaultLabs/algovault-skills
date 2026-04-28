@@ -57,33 +57,153 @@ jobs:
             echo "       done"
             exit 0
           fi
+          # DISTRIBUTION-CLOSEOUT-W1 R1: exit-code-primary success detection.
+          # Prior version did `if cmd | grep -q "Updated skill"` which broke for
+          # already-published skills (Smithery emits a different message on no-op
+          # republish, e.g. "Already published" / "No changes" / etc — exact text
+          # varies across CLI versions). Relying on grep meant 0 ok / 20 fail on
+          # every workflow re-run after the initial v0.1.0 publish (run 25055785434).
+          # New logic: success = exit 0 OR stdout matches a broadened pattern.
+          # Captures stdout for diagnostic logging on real failures (not silently
+          # swallowed by the pipe-to-grep pattern).
           OK=0; FAIL=0
           while IFS= read -r slug; do
-            if npx -y @smithery/cli skill publish "./skills/$slug" --namespace algovault 2>&1 | grep -q "Updated skill"; then
+            PUBLISH_OUT=$(npx -y @smithery/cli skill publish "./skills/$slug" --namespace algovault 2>&1)
+            PUBLISH_EXIT=$?
+            if [ "$PUBLISH_EXIT" = "0" ] || echo "$PUBLISH_OUT" | grep -qiE "updated skill|already published|no changes|up to date|already exists|published successfully"; then
               OK=$((OK+1)); echo "  ✓ algovault/$slug"
             else
-              FAIL=$((FAIL+1)); echo "  ✗ algovault/$slug"
+              FAIL=$((FAIL+1)); echo "  ✗ algovault/$slug (exit=$PUBLISH_EXIT)"
+              echo "$PUBLISH_OUT" | head -5 | sed 's/^/      /'
             fi
           done < <(jq -r '.[].slug' skills/manifest.json)
           echo "Smithery publish: $OK ok / $FAIL fail (expected 20/0)"
           test "$FAIL" = "0"
 
       # ───────── Anthropic claude-plugins-official PR (gated on token) ─────────
+      # DISTRIBUTION-CLOSEOUT-W1 R1: full fork-based PR flow.
+      # Prior version was a TODO stub that did `gh repo fork` then printed a
+      # placeholder. Now: forks → branches → edits upstream marketplace.json →
+      # commits → pushes → opens PR. Idempotent: skips if a PR is already open
+      # OR if our entry already exists in upstream marketplace.json.
+      # Auth: ANTHROPIC_PR_TOKEN must be a classic PAT with `public_repo` scope
+      # (org-traversal works for classic; fine-grained needs org-policy enable —
+      # see CLAUDE.md "Auth & narrow tokens" entry).
       - name: Open PR to anthropics/claude-plugins-official (if token present)
         env:
           ANTHROPIC_PR_TOKEN: ${{ secrets.ANTHROPIC_PR_TOKEN }}
-          GH_TOKEN: ${{ secrets.ANTHROPIC_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ANTHROPIC_PR_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
           if [ -z "$ANTHROPIC_PR_TOKEN" ]; then
             echo "SKIP: ANTHROPIC_PR_TOKEN not set in repo secrets — manual PR required"
             echo "    See docs/MARKETPLACES.md for the manual PR template"
             exit 0
           fi
-          # Fork-based PR flow (we don't have direct commit on the upstream)
-          gh repo fork anthropics/claude-plugins-official --clone --remote=false || true
-          # ... (full PR body / fork sync logic would live here)
-          echo "TODO: complete fork-based PR flow when ANTHROPIC_PR_TOKEN available"
+
+          # ─── Idempotency check 1: is our entry already merged upstream? ───
+          UPSTREAM_JSON=$(gh api repos/anthropics/claude-plugins-official/contents/.claude-plugin/marketplace.json --jq '.content' | base64 -d)
+          if echo "$UPSTREAM_JSON" | jq -e '.plugins[] | select(.name == "algovault-skills")' >/dev/null 2>&1; then
+            echo "✓ algovault-skills already in upstream marketplace.json — nothing to do"
+            exit 0
+          fi
+
+          # ─── Idempotency check 2: is a PR already open from a prior run? ───
+          EXISTING_PR=$(gh pr list --repo anthropics/claude-plugins-official --search "algovault-skills in:title" --state open --json url --jq '.[0].url // ""')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "✓ PR already open: $EXISTING_PR — nothing to do"
+            exit 0
+          fi
+
+          # ─── Identify the actor (whose token are we acting as?) ───
+          FORK_OWNER=$(gh api user --jq '.login')
+          FORK_EMAIL="${FORK_OWNER}@users.noreply.github.com"
+          echo "Acting as: $FORK_OWNER"
+
+          # ─── Fork (idempotent — `gh repo fork` no-ops if fork already exists) ───
+          gh repo fork anthropics/claude-plugins-official --clone=false || true
+          # Wait briefly for fork to be ready (GH async)
+          for i in 1 2 3 4 5; do
+            if gh api "repos/$FORK_OWNER/claude-plugins-official" >/dev/null 2>&1; then break; fi
+            sleep 3
+          done
+
+          # ─── Clone fork + sync to upstream main ───
+          WORK=$(mktemp -d)
+          git clone "https://${ANTHROPIC_PR_TOKEN}@github.com/$FORK_OWNER/claude-plugins-official.git" "$WORK/cpo"
+          cd "$WORK/cpo"
+          git config user.email "$FORK_EMAIL"
+          git config user.name "$FORK_OWNER"
+          git remote add upstream https://github.com/anthropics/claude-plugins-official.git
+          git fetch upstream main
+          git checkout -B add-algovault-skills upstream/main
+
+          # ─── Append our plugin entry (idempotent jq merge) ───
+          ENTRY_JSON=$(cat <<'JSON'
+          {
+            "name": "algovault-skills",
+            "description": "20 Agent Skills over AlgoVault MCP — composite trade verdict (signal + confidence + regime + factors), funding-rate arbitrage scanning, and market regime detection across 5 exchanges (Hyperliquid, Binance, Bybit, OKX, Bitget). Every signal Merkle-anchored on Base L2 with public verification at /track-record.",
+            "author": { "name": "AlgoVault Labs" },
+            "category": "automation",
+            "source": {
+              "source": "url",
+              "url": "https://github.com/AlgoVaultLabs/algovault-skills.git"
+            },
+            "homepage": "https://algovault.com"
+          }
+          JSON
+          )
+          jq --argjson entry "$ENTRY_JSON" '.plugins += [$entry]' .claude-plugin/marketplace.json > /tmp/mp.json
+          mv /tmp/mp.json .claude-plugin/marketplace.json
+
+          # ─── Verify edit landed cleanly + entry count went up by exactly 1 ───
+          NEW_COUNT=$(jq '.plugins | length' .claude-plugin/marketplace.json)
+          OLD_COUNT=$(echo "$UPSTREAM_JSON" | jq '.plugins | length')
+          if [ "$NEW_COUNT" != "$((OLD_COUNT + 1))" ]; then
+            echo "FAIL: plugin count went from $OLD_COUNT to $NEW_COUNT (expected $((OLD_COUNT + 1)))"
+            exit 1
+          fi
+
+          # ─── Commit + push to fork ───
+          git add .claude-plugin/marketplace.json
+          git commit -m "Add algovault-skills (20 Agent Skills over AlgoVault MCP)"
+          git push -f origin add-algovault-skills
+
+          # ─── Open PR ───
+          PR_BODY=$(cat <<'BODY'
+          ## What
+
+          Adds **algovault-skills** to the marketplace — a bundle of 20 Agent Skills wrapping AlgoVault MCP, a composite-verdict trading signal API for AI agents.
+
+          ## Why
+
+          AlgoVault gives crypto trading agents a one-call composite verdict (signal + confidence + market regime + factor breakdown) across 5 exchanges (Hyperliquid, Binance, Bybit, OKX, Bitget). Every signal is Merkle-anchored on Base L2 — publicly verifiable at https://algovault.com/track-record (~89.5% PFE WR across 58K+ signals as of 2026-04-28).
+
+          The 20 Skills cover the common agent patterns: portfolio scanning, regime-aware trading, funding arbitrage detection, multi-timeframe confirmation, hedging, multi-agent coordination. See https://github.com/AlgoVaultLabs/algovault-skills/blob/main/README.md for the full catalog.
+
+          ## Verification
+
+          - **Live MCP endpoint:** `https://api.algovault.com/mcp` (returns `{"status":"ok"}` at `/health`)
+          - **Live track record:** https://algovault.com/track-record
+          - **Source:** https://github.com/AlgoVaultLabs/algovault-skills (MIT, public)
+          - **Plugin manifest:** valid `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json`
+          - **20 SKILL.md files:** all have valid YAML frontmatter (`name` + `description`)
+          - **Already published:** Smithery (https://smithery.ai/skills/algovault), claudemarketplaces.com auto-discovery, skillsmp.com auto-discovery
+
+          ## Maintenance
+
+          Maintained by AlgoVault Labs. CI republishes on tag push (this PR was opened by the same workflow). Email: support@algovault.com.
+          BODY
+          )
+
+          PR_URL=$(gh pr create \
+            --repo anthropics/claude-plugins-official \
+            --base main \
+            --head "$FORK_OWNER:add-algovault-skills" \
+            --title "Add algovault-skills (20 Agent Skills over AlgoVault MCP)" \
+            --body "$PR_BODY")
+          echo "✓ PR opened: $PR_URL"
 
       # ───────── Manual marketplaces (no public API) ─────────
       - name: Print manual-submission notice for claudemarketplaces.com + skillsmp.com

@@ -108,7 +108,26 @@ algovault-skills/
 npm run preflight             # Verify env + repo + MCP reachable
 npm run gen                   # Regenerate all SKILL.md files from manifest
 npm test                      # Live smoke test against api.algovault.com
+npm run test:unit             # Offline unit tests (helper + template-consistency canary)
 ```
+
+### Submission generator
+
+`scripts/generate_skill_submission.mjs` reads a `docs/SUBMIT_<EXCHANGE>.md`
+template, fetches live track-record data from the AlgoVault API, and emits
+ready-to-paste submission artifacts (`SKILL.md` for Skills-Hub PRs,
+`PR_TITLE.txt`, `PR_BODY.md`, `SUMMARY.md` for every exchange):
+
+```bash
+node scripts/generate_skill_submission.mjs --exchange BINANCE
+node scripts/generate_skill_submission.mjs --exchange BYBIT --output-dir /tmp/foo/
+```
+
+Templates use `<PLACEHOLDER>` tokens (`<PFE_WR>`, `<TOTAL_CALLS>`,
+`<BATCH_COUNT>`, `<VERSION>`, etc.) so submission text never carries stale
+hardcoded numbers. CI canary `tests/unit/submit-template-consistency.test.mjs`
+fails the build if any template re-introduces a literal — keeps the templating
+discipline locked in.
 
 ## Contributing
 

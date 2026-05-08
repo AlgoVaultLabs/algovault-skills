@@ -44,8 +44,6 @@ git clone https://github.com/AlgoVaultLabs/algovault-skills && cd algovault-skil
 BINANCE_TESTNET=true node examples/binance/demo.mjs   # or OKX_DEMO=true / BYBIT_TESTNET=true / BITGET_DEMO=true
 ```
 
-Distribution surface tracker: [`docs/INTEGRATIONS_DISTRIBUTION.md`](docs/INTEGRATIONS_DISTRIBUTION.md).
-
 ## The 20 Skills
 
 <!-- SKILLS_TABLE -->
@@ -99,7 +97,7 @@ algovault-skills/
 │   ├── gen-skill.mjs         # Reads manifest, emits SKILL.md per entry
 │   └── skills_preflight.sh   # Pre-build environment check
 ├── tests/smoke/              # Live invocation tests against api.algovault.com
-└── docs/MARKETPLACES.md      # Distribution status per marketplace
+└── docs/                     # HOW_TO_ADD.md + integrations/{binance,okx,bybit,bitget}.md + SUBMIT_<EXCHANGE>.md templates
 ```
 
 ## Development

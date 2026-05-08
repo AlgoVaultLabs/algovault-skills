@@ -115,6 +115,10 @@ npm test                      # Live smoke test against api.algovault.com
 Skills are added via `skills/manifest.json` only — never hand-edit generated `SKILL.md` files.
 Add a manifest entry, run `npm run gen`, commit both. PRs welcome.
 
+## Also built by AlgoVault Labs
+
+- **`@algovaultofficialbot`** — free public Telegram bot. Regime alerts + AlgoVault trade calls (BUY/SELL) pushed to your watchlist. Same composite-verdict signal stream these skills wrap. Source: [github.com/AlgoVaultLabs/algovault-bot](https://github.com/AlgoVaultLabs/algovault-bot).
+
 ## Built by [AlgoVault Labs](https://algovault.com)
 
 Composable signal-interpretation tools for AI trading agents — MIT licensed.

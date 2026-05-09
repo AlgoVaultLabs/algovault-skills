@@ -36,11 +36,17 @@ jobs:
           curl -fsS -X POST https://api.algovault.com/mcp \
             -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
             -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null
+          # Tool count assertion: permissive >=3 floor.
+          # Floor = 3 canonical tools (get_trade_call, scan_funding_arb, get_market_regime).
+          # Live surface adds backwards-compat aliases over time (e.g. get_trade_signal alias
+          # added in v1.10.0 per OUTPUT-SANITIZE-W1). Equality check `== 3` rotted silently
+          # for 5 days; the canary should detect tool-surface SHRINKAGE (real regression),
+          # not growth (additive aliasing).
           TOOL_COUNT=$(curl -fsS -X POST https://api.algovault.com/mcp \
             -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
             -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
             | sed -n 's/^data: //p' | head -1 | jq -r '.result.tools | length')
-          test "$TOOL_COUNT" = "3"
+          test "$TOOL_COUNT" -ge 3
 
       - name: Verify Smithery listing (20 skills under algovault namespace)
         continue-on-error: true

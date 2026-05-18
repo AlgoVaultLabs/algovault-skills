@@ -1,0 +1,11 @@
+# AlgoVault x CrewAI -- pinned demo dependencies (verified 2026-05-18, Python >=3.10,<3.14)
+crewai==1.14.4
+crewai-tools[mcp]==1.14.4
+mcpadapt==0.1.20
+mcp==1.26.0
+
+# Optional -- only needed if you wire the demo into a Crew + Agent in the
+# follow-on snippet from docs/integrations/crewai.md. The bare
+# `python demo.py BTC 4h` call below does NOT need an LLM API key.
+# (CrewAI Agents call litellm under the hood; set OPENAI_API_KEY,
+# ANTHROPIC_API_KEY, or your provider's key + pick a model string.)

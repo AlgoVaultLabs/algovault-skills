@@ -1,0 +1,10 @@
+# AlgoVault x Microsoft Agent Framework (MAF) - pinned demo dependencies
+# Verified 2026-05-18, Python >=3.10
+agent-framework==1.4.0
+
+# Optional - only needed if you wire the demo to a chat model in the
+# follow-on ChatAgent snippet from docs/integrations/maf.md. The bare
+# `python demo.py BTC 4h` call below does NOT need an LLM API key.
+# agent-framework-azure-ai
+# openai
+# anthropic

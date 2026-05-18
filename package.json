@@ -1,6 +1,6 @@
 {
   "name": "@algovaultlabs/skills",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "type": "module",
   "description": "20 Agent Skills over AlgoVault MCP",

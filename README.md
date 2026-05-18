@@ -44,6 +44,22 @@ git clone https://github.com/AlgoVaultLabs/algovault-skills && cd algovault-skil
 BINANCE_TESTNET=true node examples/binance/demo.mjs   # or OKX_DEMO=true / BYBIT_TESTNET=true / BITGET_DEMO=true
 ```
 
+### Framework integrations
+
+Drop-in tutorials for the major Python agent frameworks. Each tutorial pairs
+AlgoVault MCP with the framework's canonical MCP-adapter library — copy-pasteable
+demo code, no AlgoVault SDK required. `python examples/<framework>/demo.py BTC 4h`
+returns a real BUY/SELL/HOLD verdict from `api.algovault.com/mcp`.
+
+<!-- BUILD:README_FRAMEWORK_INTEGRATIONS_TABLE -->
+| # | Framework | Tutorial | Demo | Mirror |
+|---|---|---|---|---|
+| 01 | LangChain | [`docs/integrations/langchain.md`](docs/integrations/langchain.md) | [`examples/langchain/demo.py`](examples/langchain/demo.py) | [algovault.com/docs/integrations/langchain](https://algovault.com/docs/integrations/langchain) |
+| 02 | LlamaIndex | [`docs/integrations/llamaindex.md`](docs/integrations/llamaindex.md) | [`examples/llamaindex/demo.py`](examples/llamaindex/demo.py) | [algovault.com/docs/integrations/llamaindex](https://algovault.com/docs/integrations/llamaindex) |
+| 03 | Microsoft Agent Framework | [`docs/integrations/maf.md`](docs/integrations/maf.md) | [`examples/maf/demo.py`](examples/maf/demo.py) | [algovault.com/docs/integrations/maf](https://algovault.com/docs/integrations/maf) |
+| 04 | CrewAI | [`docs/integrations/crewai.md`](docs/integrations/crewai.md) | [`examples/crewai/demo.py`](examples/crewai/demo.py) | [algovault.com/docs/integrations/crewai](https://algovault.com/docs/integrations/crewai) |
+<!-- /BUILD:README_FRAMEWORK_INTEGRATIONS_TABLE -->
+
 ## The 20 Skills
 
 <!-- SKILLS_TABLE -->

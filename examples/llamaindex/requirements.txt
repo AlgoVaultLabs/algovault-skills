@@ -1,0 +1,10 @@
+# AlgoVault x LlamaIndex - pinned demo dependencies (verified 2026-05-18, Python >=3.10)
+llama-index-tools-mcp==0.4.8
+llama-index-core>=0.14.0,<2.0.0
+mcp>=1.9.2
+
+# Optional - only needed if you wire the loaded tools into a LlamaIndex agent
+# (ReActAgent / FunctionAgent) from the follow-on snippet in
+# docs/integrations/llamaindex.md. The bare `python demo.py BTC 4h` call
+# below does NOT need an LLM API key.
+# llama-index-llms-anthropic>=0.5.0

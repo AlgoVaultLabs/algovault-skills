@@ -279,7 +279,7 @@ Full walkthrough + runnable script: <https://github.com/AlgoVaultLabs/algovault-
 Happy to answer questions about MCP streamable-HTTP transport quirks, the `McpToolSpec` -> `FunctionTool` adapter, or AlgoVault's verification model.
 ````
 
-**Submission status**: `drafts ready for merge-gate selection`. Merge gate picks Option A (blog) for broader discovery OR Option B (Discussion) for lower-friction shipping. Both can ship.
+**Submission status**: **Option B SHIPPED 2026-05-18 07:09 UTC** as [run-llama/llama_index discussion #21700](https://github.com/run-llama/llama_index/discussions/21700) — "Show and tell" category, title "Show and tell: AlgoVault MCP — composite crypto trade calls for your LlamaIndex agent", state `open`, author `AlgoVaultFi`. Posted via `gh api graphql createDiscussion` per CLAUDE.md WIS `gh-discussion-create-via-graphql-mutation` (repoId `R_kgDOIWuq5w`, categoryId `DIC_kwDOIWuq584CaCBK`). Option A (blog post draft) remains in this audit for future shipping via LlamaIndex Discord `#blog` channel or dev.to fallback.
 
 ---
 

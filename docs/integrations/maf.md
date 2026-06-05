@@ -9,7 +9,7 @@ Composite BUY/SELL/HOLD trade calls across 5 crypto perp venues. Verified track 
 
 > **Provenance:** OFFICIAL [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) (`github.com/microsoft/agent-framework` &middot; GA 1.0 April 2026 &middot; the Microsoft-anointed successor to AutoGen, which is now in maintenance mode). The MCP class used here, `agent_framework.MCPStreamableHTTPTool`, is documented at [Microsoft Learn](https://learn.microsoft.com/en-us/python/api/agent-framework-core/agent_framework.mcpstreamablehttptool?view=agent-framework-python-latest). Verified 2026-05-18.
 
-## TL;DR (3-line hook - MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call &rarr; composite verdict (call, confidence, regime, indicators). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility - fused.
@@ -179,7 +179,7 @@ Your agent calls `scan_funding_arb` to retrieve top funding-spread opportunities
 - Free tier covers 20 calls/day per IP. For higher throughput, see <https://algovault.com/pricing>.
 - AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.
 
-## Why AlgoVault? (closing - MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges (Binance, Bybit, OKX, Bitget, Hyperliquid) - not derivable from any single-venue API.

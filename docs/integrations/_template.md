@@ -6,10 +6,12 @@
   {{double-brace}} placeholders and the per-recipe content. C6 mirrors the
   rendered output to algovault.com/docs/integrations/<exchange>.
 
-  Cross-Cutting Law #3 (per spec): hero/footer = MOAT + track record;
-  code-example narration = neutral observational ("the agent reads the
-  verdict, applies its own risk policy, and decides"). Internal slogans
-  stay internal — never appear in the rendered tutorial.
+  Cross-Cutting Law #3 (per spec): hero/footer = differentiators + track
+  record; code-example narration = neutral observational ("the agent reads
+  the verdict, applies its own risk policy, and decides"). Internal strategy
+  language stays internal — never appears in the rendered tutorial. Heading
+  annotations are reader-facing hints only (e.g. "(3-line hook)", "(90s
+  read)") — never internal/editorial labels.
 
   Track record numbers are LIVE-verified at template-write time
   (snapshot 2026-04-25; see /api/performance-public for current values).
@@ -26,7 +28,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** {{provenance_line}}
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -106,7 +108,7 @@ The demo above runs on {{demo_environment}} only. Real-money setup requires:
 
 See `examples/{{exchange_slug}}/README.md` for the full real-money checklist. **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

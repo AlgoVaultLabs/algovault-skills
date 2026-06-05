@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Kraken CLI, launched 2026-03-11. A single Rust binary, MIT-licensed, exposing 151 commands. The `kraken mcp` subcommand serves those commands over stdio MCP. Repo: [`github.com/krakenfx/kraken-cli`](https://github.com/krakenfx/kraken-cli). Demo execution runs against the Kraken paper engine (`kraken paper`), which needs no API keys and no account. Verified 2026-06-04.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -129,7 +129,7 @@ The demo above runs on the Kraken paper engine only. Real-money setup requires:
 
 See `examples/kraken/README.md` for the full real-money checklist. **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Gemini Agentic Trading MCP, launched 2026-04-27. Self-hosted Node MCP under [`github.com/gemini/developer-platform`](https://github.com/gemini/developer-platform) → `packages/mcp-server` (**Apache-2.0**). Demo execution runs against [Gemini sandbox](https://exchange.sandbox.gemini.com) (`https://api.sandbox.gemini.com`), gated by the `GEMINI_API_BASE_URL` env var containing `sandbox`. Verified 2026-06-04.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -133,7 +133,7 @@ The demo above runs on Gemini sandbox only. Real-money setup requires:
 
 See `examples/gemini/README.md` for the full real-money checklist + the Gemini MCP build from source (point `GEMINI_API_BASE_URL` at the mainnet host for production runs). **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

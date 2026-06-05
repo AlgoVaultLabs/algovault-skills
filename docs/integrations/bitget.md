@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Official Bitget [`bitget-mcp-server@1.1.0`](https://www.npmjs.com/package/bitget-mcp-server) (npm; description "Official Bitget MCP Server", maintained by `secaudit@bitget.com`) + [`github.com/BitgetLimited/agent_hub`](https://github.com/BitgetLimited/agent_hub) (default branch `main`). Demo execution requires a separate **GetClaw demo account** — Bitget's per-account demo balance — because the Bitget MCP server has **no env-var-level demo flag**. This tutorial wraps the demo with `BITGET_DEMO=true` + `MAINNET_BLOCKED=true` constants + a hard `0.0001 BTC` order-size cap. Verified 2026-04-25.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -123,7 +123,7 @@ The demo above runs in a Bitget GetClaw demo account only. Real-money setup requ
 
 See `examples/bitget/README.md` for the full real-money checklist + the Bitget Agent Hub install via `claude mcp add ... -- npx -y bitget-mcp-server@1.1.0`. **AlgoVault provides analytics; your agent (and GetClaw) decide what to execute inside the policy you set.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

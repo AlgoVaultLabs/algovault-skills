@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** OFFICIAL [Binance Skills Hub](https://github.com/binance/binance-skills-hub) (`github.com/binance/binance-skills-hub` · "Built by Binance" · 761⭐ at the time of writing · last updated 2026-04-25). Binance Skills Hub uses an open marketplace pattern — install via `npx skills add <repo-url>` rather than a classic npm MCP server. Demo execution runs against [Binance Spot Testnet](https://testnet.binance.vision) (`https://testnet.binance.vision/api`) with `BINANCE_TESTNET=true` + `MAINNET_BLOCKED=true` wrapper guards. Verified 2026-04-25.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -121,7 +121,7 @@ The demo above runs on Binance Spot Testnet only. Real-money setup requires:
 
 See `examples/binance/README.md` for the full real-money checklist. **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

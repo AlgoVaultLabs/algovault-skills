@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Official Bybit MCP, launched 2026-04-22. [`bybit-official-trading-server@2.0.9`](https://www.npmjs.com/package/bybit-official-trading-server) (npm; **note: spec referenced "v1.x" — the actual current major version is 2**) + [`github.com/bybit-exchange/trading-mcp`](https://github.com/bybit-exchange/trading-mcp) (default branch `main`). Demo execution runs against [Bybit Testnet](https://testnet.bybit.com) (`https://api-testnet.bybit.com/v5/*`) with the `BYBIT_TESTNET=true` env var (verbatim from README: `\| BYBIT_TESTNET \| No \| false \| Set to true to use the testnet \|`). Verified 2026-04-25.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -120,7 +120,7 @@ The demo above runs on Bybit testnet only. Real-money setup requires:
 
 See `examples/bybit/README.md` for the full real-money checklist + the Bybit Official Trading MCP install via `npx -y bybit-official-trading-server@2.0.9` (omit `BYBIT_TESTNET=true` for production runs). **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

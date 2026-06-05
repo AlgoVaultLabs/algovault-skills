@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Alpaca crypto MCP Server, V2 launched 2026-04-09. [`alpaca-mcp-server@2.0.2`](https://pypi.org/project/alpaca-mcp-server/) (PyPI; MIT). Run zero-install via `uvx alpaca-mcp-server` (requires `uv`). Crypto kit scoped with `ALPACA_TOOLSETS=trading,crypto-data`; `ALPACA_PAPER_TRADE` defaults to `true`. Demo execution runs against the Alpaca paper venue (`paper-api.alpaca.markets/v2/orders`). Verified 2026-06-04.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -124,7 +124,7 @@ The demo above runs on the Alpaca paper venue only. Real-money setup requires:
 
 See `examples/alpaca/README.md` for the full real-money checklist + the Alpaca crypto MCP install via `uvx alpaca-mcp-server` (set `ALPACA_PAPER_TRADE=false` for live runs; live fees apply — taker 25bps / maker 15bps at T1). **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

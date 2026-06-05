@@ -9,7 +9,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 
 > **Provenance:** Official OKX [`@okx_ai/okx-trade-mcp@1.3.1`](https://www.npmjs.com/package/@okx_ai/okx-trade-mcp) (npm) + [`github.com/okx/agent-trade-kit`](https://github.com/okx/agent-trade-kit) (default branch `master`, description "OKX trading MCP server — connect AI agents to spot, swap, futures, options & grid bots via the Model Context Protocol"). Demo execution runs against OKX's simulated-trading environment via the `--demo` CLI flag (verbatim from `docs/cli-reference.md`: `--demo | Use simulated trading (demo) mode`). Verified 2026-04-25.
 
-## TL;DR (3-line hook — MOAT-led)
+## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
 - Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
@@ -124,7 +124,7 @@ The demo above runs in OKX demo trading only. Real-money setup requires:
 
 See `examples/okx/README.md` for the full real-money checklist + the OKX Agent Trade Kit production install via `npx -y @okx_ai/okx-trade-cli@latest setup --client claude-code --profile live`. **AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.**
 
-## Why AlgoVault? (closing — MOAT recap)
+## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.

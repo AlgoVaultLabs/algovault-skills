@@ -224,7 +224,7 @@ async function main() {
     ``,
     `## Artifacts written`,
     ``,
-    skillMd ? `- \`SKILL.md\` (${skillMd.length} bytes) — paste into fork at \`skills/algovault/SKILL.md\`` : `- (no SKILL.md — template has no \`<!-- SKILL_MD_START -->\` block; this is an Issue / Discussion submission)`,
+    skillMd ? `- \`SKILL.md\` (${skillMd.length} bytes) — paste into fork at \`skills/algovault/signal-intelligence/SKILL.md\` (two-level namespace/skill path per hub convention)` : `- (no SKILL.md — template has no \`<!-- SKILL_MD_START -->\` block; this is an Issue / Discussion submission)`,
     `- \`PR_TITLE.txt\` (${prTitle.length} bytes)`,
     `- \`PR_BODY.md\` (${prBody.length} bytes)`,
     ``,

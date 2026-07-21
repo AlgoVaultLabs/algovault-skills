@@ -1,7 +1,7 @@
 # AlgoVault × OKX — Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-okx)
 > *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,7 +12,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 ## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility — fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim.
 
 ## What you'll build (90s read)
@@ -93,7 +93,7 @@ Expected output (last 4 lines):
 
 The script does three things in order:
 
-1. **Fetch AlgoVault regime reads in parallel.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_signal` for `BTC` / `ETH` / `SOL` on the `4h` timeframe (each call returns `regime` alongside the signal/confidence), and returns the parsed payloads. Free tier covers 20 calls/day per IP — three regime reads per scan is ample for development.
+1. **Fetch AlgoVault regime reads in parallel.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` for `BTC` / `ETH` / `SOL` on the `4h` timeframe (each call returns `regime` alongside the signal/confidence), and returns the parsed payloads. Free tier covers 20 calls/day per IP — three regime reads per scan is ample for development.
 
 2. **Apply the agent's policy.** The agent's grid-bot policy fires only when at least one asset in the scan returns a `RANGING` regime (grid bots only profit in range-bound markets — running them in `TRENDING_*` or `VOLATILE` regimes destroys capital). The policy lives in your code — AlgoVault returns the regime classifications; the agent decides.
 
@@ -103,7 +103,7 @@ The script does three things in order:
 
 ### Recipe 1 — Multi-asset regime scan + grid-bot trigger
 
-This is the recipe `examples/okx/demo.mjs` implements. The agent calls AlgoVault `get_market_regime` (or `get_trade_signal` which carries `regime` as a field) across `BTC`, `ETH`, and `SOL` on the `4h` timeframe. For any asset whose regime is `RANGING`, the agent's pre-configured policy hands the candidate to the OKX Agent Trade Kit's grid-bot creator (`POST /api/v5/tradingBot/grid/order-algo`) in OKX demo mode. The grid bounds, leverage, and grid count come from the agent's own configuration — AlgoVault returns the regime; the agent tunes the bot.
+This is the recipe `examples/okx/demo.mjs` implements. The agent calls AlgoVault `get_market_regime` (or `get_trade_call` which carries `regime` as a field) across `BTC`, `ETH`, and `SOL` on the `4h` timeframe. For any asset whose regime is `RANGING`, the agent's pre-configured policy hands the candidate to the OKX Agent Trade Kit's grid-bot creator (`POST /api/v5/tradingBot/grid/order-algo`) in OKX demo mode. The grid bounds, leverage, and grid count come from the agent's own configuration — AlgoVault returns the regime; the agent tunes the bot.
 
 ### Recipe 2 — Funding-arb pair on options
 
@@ -111,7 +111,7 @@ The agent calls AlgoVault `scan_funding_arb` to retrieve the top funding-spread 
 
 ### Recipe 3 — Risk-gated entry with confidence floor
 
-The agent calls AlgoVault `get_trade_signal` for the asset of interest. The agent's pre-configured policy fires only when the returned `confidence` exceeds 75% — a deliberately tight floor that filters out mid-conviction signals. On execution, a small spot order goes to OKX demo via `POST /api/v5/trade/order` with `instType=SPOT`. The threshold of 75% is the agent's choice, not AlgoVault's recommendation — you tune it to your strategy's risk appetite.
+The agent calls AlgoVault `get_trade_call` for the asset of interest. The agent's pre-configured policy fires only when the returned `confidence` exceeds 75% — a deliberately tight floor that filters out mid-conviction signals. On execution, a small spot order goes to OKX demo via `POST /api/v5/trade/order` with `instType=SPOT`. The threshold of 75% is the agent's choice, not AlgoVault's recommendation — you tune it to your strategy's risk appetite.
 
 ## ⚠️ Production setup (real-money)
 
@@ -127,10 +127,10 @@ See `examples/okx/README.md` for the full real-money checklist + the OKX Agent T
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-okx)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-okx)
 
 ## Install
 

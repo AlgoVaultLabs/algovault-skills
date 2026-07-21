@@ -1,7 +1,7 @@
 # AlgoVault × Kraken — Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-kraken)
 > *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,14 +12,14 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 ## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility — fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim.
 
 ## What you'll build (90s read)
 
 A runnable Node.js agent that:
 
-1. Calls AlgoVault MCP for `get_trade_signal` on BTC at two timeframes (`15m` and `1h`).
+1. Calls AlgoVault MCP for `get_trade_call` on BTC at two timeframes (`15m` and `1h`).
 2. Confirms multi-timeframe consensus — both timeframes return the same `signal` direction.
 3. Hands the consensus signal to the Kraken paper engine, which simulates a small `kraken paper buy BTCUSD` order when the agent's pre-configured policy fires.
 
@@ -96,7 +96,7 @@ Expected output (kraken binary absent — keyless REST fallback):
 
 The script does three things in order:
 
-1. **Fetch AlgoVault verdicts on multiple timeframes.** The shared helper opens an MCP session against `https://api.algovault.com/mcp` and calls `get_trade_signal` for `BTC` on `15m` and `1h` (both free-tier supported). The agent receives two independent reads from the same composite-verdict pipeline — different windows of price action, same model.
+1. **Fetch AlgoVault verdicts on multiple timeframes.** The shared helper opens an MCP session against `https://api.algovault.com/mcp` and calls `get_trade_call` for `BTC` on `15m` and `1h` (both free-tier supported). The agent receives two independent reads from the same composite-verdict pipeline — different windows of price action, same model.
 
 2. **Apply the agent's consensus policy.** When both timeframes return the same `signal` direction (and that direction is not `HOLD`), the agent's pre-configured policy fires its execution branch. Disagreement between timeframes — or any `HOLD` — skips execution. The threshold of "all timeframes agree" is the agent's choice; you might use 2-of-3 or weighted voting in production.
 
@@ -106,15 +106,15 @@ The script does three things in order:
 
 ### Recipe 1 — Multi-timeframe consensus → Kraken paper entry
 
-This is the recipe `examples/kraken/demo.mjs` implements. The agent calls AlgoVault `get_trade_signal` for `BTC` on `15m` and `1h` (extend to `5m` once on Starter+ for a 3-timeframe consensus). The agent's pre-configured policy fires its execution branch only when **all queried timeframes agree** on the same direction (`BUY` or `SELL`; `HOLD` always blocks). On execution, a small simulated order goes to the Kraken paper engine via `kraken paper buy BTCUSD 0.01 -o json`. The paper engine needs zero keys and zero account. The threshold of "all agree" is the agent's choice — you might run 2-of-3 weighted voting in production.
+This is the recipe `examples/kraken/demo.mjs` implements. The agent calls AlgoVault `get_trade_call` for `BTC` on `15m` and `1h` (extend to `5m` once on Starter+ for a 3-timeframe consensus). The agent's pre-configured policy fires its execution branch only when **all queried timeframes agree** on the same direction (`BUY` or `SELL`; `HOLD` always blocks). On execution, a small simulated order goes to the Kraken paper engine via `kraken paper buy BTCUSD 0.01 -o json`. The paper engine needs zero keys and zero account. The threshold of "all agree" is the agent's choice — you might run 2-of-3 weighted voting in production.
 
 ### Recipe 2 — Regime-gated futures-paper hedge
 
-The agent calls AlgoVault `get_market_regime` (or reads `regime` off the `get_trade_signal` payload) for the asset of interest. The agent's pre-configured policy fires its hedge branch when the returned regime is `VOLATILE` and confidence clears a configured floor. On execution, the agent opens an offsetting position on the Kraken **futures** paper engine (`kraken futures paper`), which supports 8 order types for stop and take-profit placement. The hedge size and order type come from the agent's risk-policy config; AlgoVault returns the regime classification.
+The agent calls AlgoVault `get_market_regime` (or reads `regime` off the `get_trade_call` payload) for the asset of interest. The agent's pre-configured policy fires its hedge branch when the returned regime is `VOLATILE` and confidence clears a configured floor. On execution, the agent opens an offsetting position on the Kraken **futures** paper engine (`kraken futures paper`), which supports 8 order types for stop and take-profit placement. The hedge size and order type come from the agent's risk-policy config; AlgoVault returns the regime classification.
 
 ### Recipe 3 — Ticker-vs-verdict divergence alert
 
-The agent reads the live ticker through a Kraken MCP tool — tool names follow the `kraken_<command>` form, so `kraken ticker` becomes `kraken_ticker`. It compares the ticker's recent move against the AlgoVault `get_trade_signal` direction for the same asset. When price has moved one way but the composite verdict points the other way (and confidence is high), the agent's policy raises a divergence alert for review. No order fires — this recipe watches and reports. AlgoVault returns the verdict; the agent owns the alert threshold.
+The agent reads the live ticker through a Kraken MCP tool — tool names follow the `kraken_<command>` form, so `kraken ticker` becomes `kraken_ticker`. It compares the ticker's recent move against the AlgoVault `get_trade_call` direction for the same asset. When price has moved one way but the composite verdict points the other way (and confidence is high), the agent's policy raises a divergence alert for review. No order fires — this recipe watches and reports. AlgoVault returns the verdict; the agent owns the alert threshold.
 
 ## ⚠️ Production setup (real-money)
 
@@ -132,10 +132,10 @@ See `examples/kraken/README.md` for the full real-money checklist. **AlgoVault p
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-kraken)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-kraken)
 
 ## Install
 

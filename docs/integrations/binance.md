@@ -1,7 +1,7 @@
 # AlgoVault × Binance — Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-binance)
 > *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,7 +12,7 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 ## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility — fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim.
 
 ## What you'll build (90s read)
@@ -88,7 +88,7 @@ Expected output (last 3 lines):
 
 The script does three things in order:
 
-1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_signal` with `{coin: 'ETH', timeframe: '1h'}`, and returns the parsed `signal`/`confidence`/`regime`/`factors` payload. Free tier covers 20 calls/day per IP — plenty for development.
+1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin: 'ETH', timeframe: '1h'}`, and returns the parsed `signal`/`confidence`/`regime`/`factors` payload. Free tier covers 20 calls/day per IP — plenty for development.
 
 2. **Apply the agent's policy.** When the verdict satisfies the agent's pre-configured policy (`signal === 'BUY' AND confidence > 70`), the script proceeds to the execution branch. The policy lives in your code — AlgoVault returns the analytics; the agent decides.
 
@@ -104,7 +104,7 @@ This recipe is the cleanest "AlgoVault as policy gate" pattern — DCA logic sta
 
 ### Recipe 2 — Confidence-filtered swing entry on ETH
 
-This is the recipe `examples/binance/demo.mjs` implements. The agent calls AlgoVault `get_trade_signal` for `ETH` on the `1h` timeframe. The agent's policy fires its execution branch only when `signal === 'BUY'` AND `confidence > 70`. On execution, a small `LIMIT` order is validated via `POST /api/v3/order/test` against Binance Spot Testnet. The same shape works for `SELL` policies in production (with the appropriate side flip).
+This is the recipe `examples/binance/demo.mjs` implements. The agent calls AlgoVault `get_trade_call` for `ETH` on the `1h` timeframe. The agent's policy fires its execution branch only when `signal === 'BUY'` AND `confidence > 70`. On execution, a small `LIMIT` order is validated via `POST /api/v3/order/test` against Binance Spot Testnet. The same shape works for `SELL` policies in production (with the appropriate side flip).
 
 ### Recipe 3 — Funding-arb opportunity awareness
 
@@ -124,10 +124,10 @@ See `examples/binance/README.md` for the full real-money checklist. **AlgoVault 
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-binance)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-binance)
 
 ## Install
 

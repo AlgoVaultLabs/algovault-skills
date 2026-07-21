@@ -1,7 +1,7 @@
 # AlgoVault × Bitget — Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
 > *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,14 +12,14 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 ## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility — fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim.
 
 ## What you'll build (90s read)
 
 A runnable Node.js agent that:
 
-1. Calls AlgoVault MCP for `get_trade_signal` on `BTC` at the `1h` timeframe.
+1. Calls AlgoVault MCP for `get_trade_call` on `BTC` at the `1h` timeframe.
 2. Reads the verdict's `signal` and `confidence` and renders them as a natural-language instruction (e.g. *"BUY 0.0001 BTC because confidence is 78% and the regime is TRENDING_UP"*).
 3. Hands the instruction to Bitget's GetClaw agent — which, when run against a GetClaw demo account, executes the order autonomously inside its dedicated AI account.
 
@@ -92,7 +92,7 @@ Expected output (last 4 lines):
 
 The script does three things in order:
 
-1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_signal` for `BTC` on `1h`, and returns the parsed `signal` / `confidence` / `regime` / `factors` payload. Free tier covers the BTC + 1h combination.
+1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` for `BTC` on `1h`, and returns the parsed `signal` / `confidence` / `regime` / `factors` payload. Free tier covers the BTC + 1h combination.
 
 2. **Render the natural-language instruction.** When the verdict satisfies the agent's pre-configured policy (`signal === 'BUY' AND confidence > 70`), the script generates a one-line natural-language instruction GetClaw can interpret directly. When the policy does not fire, the instruction is `HOLD` with the failing reason. This recipe is the canonical "AlgoVault as the analytics brain, GetClaw as the natural-language execution agent" pattern.
 
@@ -102,7 +102,7 @@ The script does three things in order:
 
 ### Recipe 1 — Natural-language verdict + GetClaw execution
 
-This is the recipe `examples/bitget/demo.mjs` implements. The agent calls AlgoVault `get_trade_signal` for `BTC` on `1h`, renders the verdict as a natural-language instruction, and hands the instruction to GetClaw running inside a dedicated demo account. GetClaw interprets the instruction, applies its own pre-configured risk policy (size cap, slippage tolerance), and either executes via `POST /v2/mix/order/place-order` or skips with a logged reason. **GetClaw's autonomy is bounded by the demo account's balance + your wrapper's `BITGET_DEMO=true` env contract — never by code-level checks alone.**
+This is the recipe `examples/bitget/demo.mjs` implements. The agent calls AlgoVault `get_trade_call` for `BTC` on `1h`, renders the verdict as a natural-language instruction, and hands the instruction to GetClaw running inside a dedicated demo account. GetClaw interprets the instruction, applies its own pre-configured risk policy (size cap, slippage tolerance), and either executes via `POST /v2/mix/order/place-order` or skips with a logged reason. **GetClaw's autonomy is bounded by the demo account's balance + your wrapper's `BITGET_DEMO=true` env contract — never by code-level checks alone.**
 
 ### Recipe 2 — Five Bitget AI Skills + AlgoVault composite verdict (complementary)
 
@@ -110,7 +110,7 @@ Bitget Agent Hub ships five analytical AI Skills out of the box: macro, technica
 
 ### Recipe 3 — Agent-native portfolio rebalance via GetClaw
 
-The agent runs a daily regime scan via AlgoVault `get_market_regime` (or reads `regime` off `get_trade_signal`) across the assets in the GetClaw demo account's portfolio. For any asset whose regime has shifted (e.g. moved from `RANGING` to `TRENDING_DOWN`), the agent's pre-configured rebalance policy issues a natural-language rebalance instruction to GetClaw — **inside the demo account's walled garden**. GetClaw's account-isolation guarantees the rebalance can't touch any other Bitget account funds. **Multi-asset position state lives in the GetClaw demo account, not in agent memory — the agent reads, decides, and instructs; GetClaw owns and executes.**
+The agent runs a daily regime scan via AlgoVault `get_market_regime` (or reads `regime` off `get_trade_call`) across the assets in the GetClaw demo account's portfolio. For any asset whose regime has shifted (e.g. moved from `RANGING` to `TRENDING_DOWN`), the agent's pre-configured rebalance policy issues a natural-language rebalance instruction to GetClaw — **inside the demo account's walled garden**. GetClaw's account-isolation guarantees the rebalance can't touch any other Bitget account funds. **Multi-asset position state lives in the GetClaw demo account, not in agent memory — the agent reads, decides, and instructs; GetClaw owns and executes.**
 
 ## ⚠️ Production setup (real-money)
 
@@ -126,10 +126,10 @@ See `examples/bitget/README.md` for the full real-money checklist + the Bitget A
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bitget)
 
 ## Install
 

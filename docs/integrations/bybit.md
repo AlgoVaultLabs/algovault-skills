@@ -1,7 +1,7 @@
 # AlgoVault × Bybit — Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ Merkle-verified on-chain batches.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ Merkle-verified on-chain batches.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bybit)
 > *Snapshot taken 2026-04-26 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,14 +12,14 @@ AlgoVault MCP gives your agent a **composite verdict** in one call — direction
 ## TL;DR (3-line hook)
 
 - One API call → composite verdict (signal, confidence, regime, factors). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility — fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility — fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim.
 
 ## What you'll build (90s read)
 
 A runnable Node.js agent that:
 
-1. Calls AlgoVault MCP for `get_trade_signal` on ETH at two timeframes (`15m` and `1h`).
+1. Calls AlgoVault MCP for `get_trade_call` on ETH at two timeframes (`15m` and `1h`).
 2. Confirms multi-timeframe consensus — both timeframes return the same `signal` direction.
 3. Hands the consensus signal to Bybit Linear Perpetual testnet, which validates a small order (`POST /v5/order/create` against `api-testnet.bybit.com`) when the agent's pre-configured policy fires.
 
@@ -89,7 +89,7 @@ Expected output (last 4 lines):
 
 The script does three things in order:
 
-1. **Fetch AlgoVault verdicts on multiple timeframes.** The shared helper opens an MCP session against `https://api.algovault.com/mcp` and calls `get_trade_signal` for `ETH` on `15m` and `1h` (both free-tier supported). The agent receives two independent reads from the same composite-verdict pipeline — different windows of price action, same model.
+1. **Fetch AlgoVault verdicts on multiple timeframes.** The shared helper opens an MCP session against `https://api.algovault.com/mcp` and calls `get_trade_call` for `ETH` on `15m` and `1h` (both free-tier supported). The agent receives two independent reads from the same composite-verdict pipeline — different windows of price action, same model.
 
 2. **Apply the agent's consensus policy.** When both timeframes return the same `signal` direction (and that direction is not `HOLD`), the agent's pre-configured policy fires its execution branch. Disagreement between timeframes — or any `HOLD` — skips execution entirely. The threshold of "all timeframes agree" is the agent's choice; you might use 2-of-3 or weighted voting in production.
 
@@ -99,15 +99,15 @@ The script does three things in order:
 
 ### Recipe 1 — Multi-timeframe consensus → Bybit perp entry
 
-This is the recipe `examples/bybit/demo.mjs` implements. The agent calls AlgoVault `get_trade_signal` for `ETH` on `15m` and `1h` (extend to `5m` once on Starter+ for the original 3-timeframe consensus the spec describes). The agent's pre-configured policy fires its execution branch only when **all queried timeframes agree** on the same direction (`BUY` or `SELL`; `HOLD` always blocks). On execution, a small `LIMIT` order goes to Bybit Linear Perpetual testnet via `POST /v5/order/create`. The threshold of "all agree" is the agent's choice — you might run 2-of-3 weighted voting in production.
+This is the recipe `examples/bybit/demo.mjs` implements. The agent calls AlgoVault `get_trade_call` for `ETH` on `15m` and `1h` (extend to `5m` once on Starter+ for the original 3-timeframe consensus the spec describes). The agent's pre-configured policy fires its execution branch only when **all queried timeframes agree** on the same direction (`BUY` or `SELL`; `HOLD` always blocks). On execution, a small `LIMIT` order goes to Bybit Linear Perpetual testnet via `POST /v5/order/create`. The threshold of "all agree" is the agent's choice — you might run 2-of-3 weighted voting in production.
 
 ### Recipe 2 — Volatility breakout watch with conditional orders
 
-The agent calls AlgoVault `get_market_regime` (or reads `regime` off the `get_trade_signal` payload) for the asset of interest. The agent's pre-configured policy fires its execution branch when the returned regime is `VOLATILE` and confidence exceeds a configured floor. On execution, a Bybit testnet **conditional order** (Bybit's specialty — combines a trigger price, a take-profit, and a stop-loss in one API call via `POST /v5/order/create` with `triggerPrice`, `takeProfit`, `stopLoss`) goes against the breakout direction. The TP/SL distances come from the agent's risk-policy config; AlgoVault returns the regime classification.
+The agent calls AlgoVault `get_market_regime` (or reads `regime` off the `get_trade_call` payload) for the asset of interest. The agent's pre-configured policy fires its execution branch when the returned regime is `VOLATILE` and confidence exceeds a configured floor. On execution, a Bybit testnet **conditional order** (Bybit's specialty — combines a trigger price, a take-profit, and a stop-loss in one API call via `POST /v5/order/create` with `triggerPrice`, `takeProfit`, `stopLoss`) goes against the breakout direction. The TP/SL distances come from the agent's risk-policy config; AlgoVault returns the regime classification.
 
 ### Recipe 3 — Hedge-aware DCA on existing position
 
-The agent already holds a long position. It calls AlgoVault `get_market_regime` and `get_trade_signal` for the same asset. When **both** indicators are bearish (regime ∈ `{TRENDING_DOWN, VOLATILE}` AND signal == `SELL` with high confidence), the agent's pre-configured hedge policy opens an offsetting short on Bybit testnet (notional-only — never leverage above the existing long). When indicators flip back to neutral or bullish, the agent's policy closes the hedge. **Multi-position state management is the agent's responsibility — AlgoVault returns the current read; the agent tracks position, cost basis, and hedge ratio.**
+The agent already holds a long position. It calls AlgoVault `get_market_regime` and `get_trade_call` for the same asset. When **both** indicators are bearish (regime ∈ `{TRENDING_DOWN, VOLATILE}` AND signal == `SELL` with high confidence), the agent's pre-configured hedge policy opens an offsetting short on Bybit testnet (notional-only — never leverage above the existing long). When indicators flip back to neutral or bullish, the agent's policy closes the hedge. **Multi-position state management is the agent's responsibility — AlgoVault returns the current read; the agent tracks position, cost basis, and hedge ratio.**
 
 ## ⚠️ Production setup (real-money)
 
@@ -123,10 +123,10 @@ See `examples/bybit/README.md` for the full real-money checklist + the Bybit Off
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges — not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-04-26 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">89.4%</span> PFE Win Rate · <span data-tr-field="signal_count">56,375</span>+ calls · <span data-tr-field="batch_count">16</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bybit)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-bybit)
 
 ## Install
 

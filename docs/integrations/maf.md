@@ -1,7 +1,7 @@
 # AlgoVault x Microsoft Agent Framework - Build Verifiable AI Trading Agents
 
-> <!-- snapshot: 2026-05-18 - live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">90.47%</span> PFE Win Rate &middot; <span data-tr-field="total_calls">96,864</span>+ calls &middot; <span data-tr-field="merkle_batches">38</span>+ Merkle-verified on-chain batches &middot; <span data-tr-field="asset_count">738</span> assets.</strong>
+> <!-- snapshot: 2026-07-21 - live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate &middot; <span data-tr-field="call_count">383,789</span>+ calls &middot; <span data-tr-field="merkle_batch_count">100</span>+ Merkle-verified on-chain batches &middot; <span data-tr-field="asset_count">738</span> assets.</strong>
 > Don't trust - [verify the track record &rarr;](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-maf)
 > *Snapshot taken 2026-05-18 - live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -12,7 +12,7 @@ Composite BUY/SELL/HOLD trade calls across 5 crypto perp venues. Verified track 
 ## TL;DR (3-line hook)
 
 - One API call &rarr; composite verdict (call, confidence, regime, indicators). Not 26 raw indicators.
-- Cross-venue intelligence across 5 exchanges. Funding spreads, regime alignment, volatility - fused.
+- Cross-venue intelligence across 12 exchanges. Funding spreads, regime alignment, volatility - fused.
 - Every signal Merkle-anchored on-chain. Verifiable accuracy, not a marketing claim. ERC-8004 agentId `44544`.
 
 ## What you'll build (90s read)
@@ -156,7 +156,7 @@ async with tool:
     print(response)
 ```
 
-The pattern is identical for `get_trade_signal`, `scan_funding_arb`, and `get_market_regime` - MAF loads all 4 AlgoVault tools at `connect()` time and the chat model picks which to call.
+The pattern is identical for `get_trade_call`, `scan_funding_arb`, and `get_market_regime` - MAF loads all 4 AlgoVault tools at `connect()` time and the chat model picks which to call.
 
 ## 3 Recipes
 
@@ -182,10 +182,10 @@ Your agent calls `scan_funding_arb` to retrieve top funding-spread opportunities
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 5 exchanges (Binance, Bybit, OKX, Bitget, Hyperliquid) - not derivable from any single-venue API.
+- **Cross-venue intelligence.** Funding spreads, regime, and sentiment fused across 12 exchanges (Binance, Bybit, OKX, Bitget, Hyperliquid) - not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. ERC-8004 agentId `44544`. Verify before you subscribe.
-- <!-- snapshot: 2026-05-18 - live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">90.47%</span> PFE Win Rate &middot; <span data-tr-field="total_calls">96,864</span>+ calls &middot; <span data-tr-field="merkle_batches">38</span>+ on-chain batches &middot; <span data-tr-field="asset_count">738</span> assets</strong> &rarr; [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-maf)
+- <!-- snapshot: 2026-07-21 - live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate &middot; <span data-tr-field="call_count">383,789</span>+ calls &middot; <span data-tr-field="merkle_batch_count">100</span>+ on-chain batches &middot; <span data-tr-field="asset_count">738</span> assets</strong> &rarr; [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-maf)
 
 ## CTA
 

@@ -1,7 +1,7 @@
 # AlgoVault x LlamaIndex — Composite Trade Calls for Your LlamaIndex Agent
 
-> <!-- snapshot: 2026-05-18 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">90.47%</span> PFE Win Rate · <span data-tr-field="total_calls">96,864</span>+ calls · <span data-tr-field="merkle_batches">38</span>+ Merkle-verified on-chain batches · <span data-tr-field="asset_count">738</span> assets covered.</strong>
+> <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="merkle_batch_count">100</span>+ Merkle-verified on-chain batches · <span data-tr-field="asset_count">738</span> assets covered.</strong>
 > Don't trust — [verify the track record →](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-llamaindex)
 > *Snapshot taken 2026-05-18 — live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
@@ -97,7 +97,7 @@ The 4 keys (`call`, `confidence`, `indicators`, `regime`) are the documented con
 | Tool | Use case |
 |---|---|
 | `get_trade_call` | Composite BUY/SELL/HOLD verdict + confidence + regime + indicators for one coin + timeframe |
-| `get_trade_signal` | Back-compat alias of `get_trade_call` (same payload shape) |
+| `get_trade_call` | Back-compat alias of `get_trade_call` (same payload shape) |
 | `scan_funding_arb` | Rank funding-spread opportunities across the 5 venues |
 | `get_market_regime` | Regime classification (TRENDING_UP / TRENDING_DOWN / RANGING / VOLATILE) for one coin + timeframe |
 
@@ -138,8 +138,8 @@ Requires `pip install llama-index-llms-anthropic` and an `ANTHROPIC_API_KEY`. Sw
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
 - **Cross-venue signal.** Funding spreads, regime, and sentiment fused across 5 venues — not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
-- <!-- snapshot: 2026-05-18 — live source of truth: /api/performance-public + /api/merkle-batches -->
-<strong><span data-tr-field="pfe_wr">90.47%</span> PFE Win Rate · <span data-tr-field="total_calls">96,864</span>+ calls · <span data-tr-field="merkle_batches">38</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-llamaindex)
+- <!-- snapshot: 2026-07-21 — live source of truth: /api/performance-public + /api/merkle-batches -->
+<strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="merkle_batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-llamaindex)
 
 ## Next steps
 

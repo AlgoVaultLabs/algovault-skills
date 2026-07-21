@@ -67,7 +67,7 @@ test('happy path: initialize + tools/call returns parsed verdict', async () => {
         jsonBody: { jsonrpc: '2.0', id: 1, result: { protocolVersion: '2025-11-05' } },
       });
     }
-    if (body.method === 'tools/call' && body.params?.name === 'get_trade_signal') {
+    if (body.method === 'tools/call' && body.params?.name === 'get_trade_call') {
       assert.equal(opts.headers['mcp-session-id'], 'sess-test-123');
       assert.equal(body.params.arguments.coin, 'BTC');
       assert.equal(body.params.arguments.timeframe, '15m');
@@ -81,11 +81,11 @@ test('happy path: initialize + tools/call returns parsed verdict', async () => {
               {
                 type: 'text',
                 text: JSON.stringify({
-                  signal: 'BUY',
+                  call: 'BUY',
                   confidence: 75,
                   regime: 'TRENDING_UP',
                   factors: { rsi: 'neutral', ema: 'bullish' },
-                  _algovault: { tool: 'get_trade_signal', version: '1.9.0' },
+                  _algovault: { tool: 'get_trade_call', version: '1.9.0' },
                 }),
               },
             ],
@@ -102,7 +102,7 @@ test('happy path: initialize + tools/call returns parsed verdict', async () => {
     assert.equal(verdict.confidence, 75);
     assert.equal(verdict.regime, 'TRENDING_UP');
     assert.deepEqual(verdict.factors, { rsi: 'neutral', ema: 'bullish' });
-    assert.equal(verdict._algovault.tool, 'get_trade_signal');
+    assert.equal(verdict._algovault.tool, 'get_trade_call');
     assert.equal(callCount, 2, 'expected initialize + tools/call');
   } finally {
     globalThis.fetch = realFetch;
@@ -189,11 +189,11 @@ test('SSE response (text/event-stream) is parsed correctly', async () => {
             {
               type: 'text',
               text: JSON.stringify({
-                signal: 'SELL',
+                call: 'SELL',
                 confidence: 62,
                 regime: 'RANGING',
                 factors: {},
-                _algovault: { tool: 'get_trade_signal', version: '1.9.0' },
+                _algovault: { tool: 'get_trade_call', version: '1.9.0' },
               }),
             },
           ],
@@ -206,6 +206,86 @@ test('SSE response (text/event-stream) is parsed correctly', async () => {
     const verdict = await getAlgoVaultVerdict({ coin: 'AVAX', timeframe: '1h' });
     assert.equal(verdict.signal, 'SELL');
     assert.equal(verdict.regime, 'RANGING');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+// OPS-INTEGRATIONS-VENUE-PAGES-W1 — the two regressions that silently broke
+// every demo in this repo. Both are locked here because both failed QUIETLY:
+// the first threw only at runtime against the live server, and the second made
+// a policy check that can NEVER fire look like a policy that merely chose not to.
+test('STATELESS transport: initialize without mcp-session-id still works', async () => {
+  _resetAlgoVaultHelper();
+  let sentSessionHeader = 'UNSET';
+  globalThis.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    if (body.method === 'initialize') {
+      // Stateless server (sessionIdGenerator: undefined) → NO session header.
+      return makeMockResponse({
+        status: 200,
+        headers: {},
+        jsonBody: { jsonrpc: '2.0', id: 1, result: { protocolVersion: '2025-11-05' } },
+      });
+    }
+    sentSessionHeader = opts.headers['mcp-session-id'] ?? 'ABSENT';
+    return makeMockResponse({
+      status: 200,
+      jsonBody: {
+        jsonrpc: '2.0',
+        id: 2,
+        result: {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              call: 'BUY', confidence: 81, regime: 'TRENDING_UP',
+              _algovault: { tool: 'get_trade_call' },
+            }),
+          }],
+        },
+      },
+    });
+  };
+  try {
+    const verdict = await getAlgoVaultVerdict({ coin: 'ETH', timeframe: '1h' });
+    assert.equal(verdict.call, 'BUY');
+    // Header must be OMITTED, not sent empty — an empty session id is not a
+    // valid session and a strict transport can reject it.
+    assert.equal(sentSessionHeader, 'ABSENT');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('direction comes from the `call` wire field, not the retired `signal`', async () => {
+  _resetAlgoVaultHelper();
+  globalThis.fetch = async (url, opts) => {
+    const body = JSON.parse(opts.body);
+    if (body.method === 'initialize') {
+      return makeMockResponse({ status: 200, headers: {}, jsonBody: { jsonrpc: '2.0', id: 1, result: {} } });
+    }
+    return makeMockResponse({
+      status: 200,
+      jsonBody: {
+        jsonrpc: '2.0',
+        id: 2,
+        result: {
+          content: [{
+            type: 'text',
+            // v1.10.0 wire shape: `call`, with NO `signal` key at all.
+            text: JSON.stringify({ call: 'BUY', confidence: 91, regime: 'TRENDING_UP', _algovault: {} }),
+          }],
+        },
+      },
+    });
+  };
+  try {
+    const verdict = await getAlgoVaultVerdict({ coin: 'BTC', timeframe: '4h' });
+    assert.equal(verdict.call, 'BUY');
+    // Back-compat alias mirrors it so a reader's older demo copy that checks
+    // `.signal === 'BUY'` still reaches its execution branch.
+    assert.equal(verdict.signal, 'BUY');
+    assert.notEqual(verdict.signal, undefined);
   } finally {
     globalThis.fetch = realFetch;
   }

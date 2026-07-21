@@ -2,7 +2,7 @@
  * AlgoVault MCP helper — shared by every per-exchange demo in
  * examples/<exchange>/demo.mjs.
  *
- * Wraps a single call to the live AlgoVault MCP server's `get_trade_signal`
+ * Wraps a single call to the live AlgoVault MCP server's `get_trade_call`
  * tool and returns the parsed verdict (signal/confidence/regime/factors).
  *
  * Why raw fetch + JSON-RPC instead of @modelcontextprotocol/sdk Client?
@@ -58,13 +58,15 @@ async function ensureInitialized() {
     if (!r.ok) {
       throw new Error(`AlgoVault MCP initialize failed: HTTP ${r.status}`);
     }
-    const sid = r.headers.get('mcp-session-id');
-    if (!sid) {
-      throw new Error('AlgoVault MCP initialize: no mcp-session-id header');
-    }
-    _sessionId = sid;
+    // OPS-INTEGRATIONS-VENUE-PAGES-W1: the remote MCP transport runs
+    // STATELESS (`sessionIdGenerator: undefined`), so `initialize` returns NO
+    // `mcp-session-id` header. This used to throw, which broke EVERY demo in
+    // this repo. The header is now optional: forward it when the server sends
+    // one (stateful deployments / self-hosted stdio bridges), omit it when it
+    // does not. Empty string = "no session", which is a valid stateless call.
+    _sessionId = r.headers.get('mcp-session-id') ?? '';
     _initPromise = null;
-    return sid;
+    return _sessionId;
   })().catch((err) => {
     _initPromise = null;
     throw err;
@@ -94,7 +96,7 @@ async function parseMcpResponse(r) {
 }
 
 /**
- * Invoke `get_trade_signal` and return the parsed verdict.
+ * Invoke `get_trade_call` and return the parsed verdict.
  *
  * @param {object} args
  * @param {string} args.coin - e.g. 'BTC', 'ETH', 'SOL'
@@ -126,14 +128,15 @@ export async function getAlgoVaultVerdict({
     headers: {
       'Content-Type': 'application/json',
       Accept: ACCEPT,
-      'mcp-session-id': sid,
+      // Omitted entirely when the server is stateless (sid === '').
+      ...(sid ? { 'mcp-session-id': sid } : {}),
     },
     body: JSON.stringify({
       jsonrpc: '2.0',
       id: 2,
       method: 'tools/call',
       params: {
-        name: 'get_trade_signal',
+        name: 'get_trade_call',
         arguments: { coin, timeframe, exchange, includeReasoning },
       },
     }),
@@ -161,10 +164,24 @@ export async function getAlgoVaultVerdict({
     // caller's retry/skip logic can read .error.
     throw new Error(`AlgoVault upstream error: ${parsed.error ?? text}`);
   }
+  // OPS-INTEGRATIONS-VENUE-PAGES-W1: the direction field on the wire is
+  // `call` ("BUY" | "SELL" | "HOLD"). v1.10.0 renamed it from `signal` when
+  // `get_trade_signal` became `get_trade_call`, but this helper still read
+  // `parsed.signal` — which is always undefined, so every demo's
+  // `verdict.signal === 'BUY'` policy check was permanently false. The demos
+  // therefore never reached their execution branch: silent, and it made the
+  // tutorials describe behaviour that could not occur.
+  //
+  // `call` is canonical. `signal` is kept as a back-compat alias so any
+  // reader's existing copy of a demo keeps working, and both are populated
+  // from the one wire field — no second derivation to drift.
+  const call = parsed.call ?? parsed.signal;
   return {
-    signal: parsed.signal,
+    call,
+    signal: call,
     confidence: parsed.confidence,
     regime: parsed.regime,
+    reasoning: parsed.reasoning,
     factors: parsed.factors,
     _algovault: parsed._algovault,
     _raw: parsed,

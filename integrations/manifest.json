@@ -15,10 +15,17 @@
     "community_submission_url": "MANUAL_PENDING",
     "status": "LIVE",
     "launch_date": "2026-03-03",
-    "icon": "🏆",
-    "logo": { "path": "/assets/logos/binance.svg", "invert": false },
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    },
     "tagline": "Composite verdict + official Binance Skills Hub for Spot Testnet execution",
-    "recipes": ["regime-gated-dca-btc", "confidence-filtered-eth-swing", "funding-arb-cash-and-carry"]
+    "recipes": [
+      "regime-gated-dca-btc",
+      "confidence-filtered-eth-swing",
+      "funding-arb-cash-and-carry"
+    ]
   },
   {
     "slug": "okx",
@@ -36,10 +43,17 @@
     "community_submission_url": "MANUAL_PENDING",
     "status": "LIVE",
     "launch_date": "2026-03-15",
-    "icon": "🎯",
-    "logo": { "path": "/assets/logos/okx.svg", "invert": true },
+    "icon": "\ud83c\udfaf",
+    "logo": {
+      "path": "/assets/logos/okx.svg",
+      "invert": true
+    },
     "tagline": "Composite verdict + 83 OKX execution tools across spot, swap, futures, options, grid bots",
-    "recipes": ["multi-asset-regime-grid-bot", "funding-arb-options-pair", "risk-gated-confidence-floor"]
+    "recipes": [
+      "multi-asset-regime-grid-bot",
+      "funding-arb-options-pair",
+      "risk-gated-confidence-floor"
+    ]
   },
   {
     "slug": "bybit",
@@ -57,10 +71,17 @@
     "community_submission_url": "MANUAL_PENDING",
     "status": "LIVE",
     "launch_date": "2026-04-22",
-    "icon": "⚡",
-    "logo": { "path": "/assets/logos/bybit.png", "invert": false },
+    "icon": "\u26a1",
+    "logo": {
+      "path": "/assets/logos/bybit.png",
+      "invert": false
+    },
     "tagline": "Composite verdict + Bybit's official MCP for Linear Perpetual + conditional orders",
-    "recipes": ["multi-tf-consensus-perp-entry", "volatility-breakout-conditional", "hedge-aware-dca"]
+    "recipes": [
+      "multi-tf-consensus-perp-entry",
+      "volatility-breakout-conditional",
+      "hedge-aware-dca"
+    ]
   },
   {
     "slug": "bitget",
@@ -78,9 +99,212 @@
     "community_submission_url": "MANUAL_PENDING",
     "status": "LIVE",
     "launch_date": "2026-02-13",
-    "icon": "🤖",
-    "logo": { "path": "/assets/logos/bitget.png", "invert": false },
+    "icon": "\ud83e\udd16",
+    "logo": {
+      "path": "/assets/logos/bitget.png",
+      "invert": false
+    },
     "tagline": "Composite verdict + GetClaw agent-native execution inside a dedicated AI account",
-    "recipes": ["nlp-verdict-getclaw", "five-bitget-skills-complement", "agent-native-rebalance"]
+    "recipes": [
+      "nlp-verdict-getclaw",
+      "five-bitget-skills-complement",
+      "agent-native-rebalance"
+    ]
+  },
+  {
+    "slug": "hyperliquid",
+    "name": "Hyperliquid",
+    "package": "hyperliquid-dex/hyperliquid-python-sdk",
+    "package_install": "pip install hyperliquid-python-sdk",
+    "package_version": "0.24.0",
+    "repo_url": "https://github.com/hyperliquid-dex/hyperliquid-python-sdk",
+    "docs_url": "https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api",
+    "demo_flag": "HYPERLIQUID_TESTNET=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/hyperliquid.md",
+    "mirror_url_web": "https://algovault.com/integrations/hyperliquid",
+    "tagline": "Composite verdict + Hyperliquid testnet perps (official Python SDK; no official npm SDK)",
+    "recipes": [
+      "regime-gated-entries-btc",
+      "confidence-tiered-sizing",
+      "python-sdk-submission"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "aster",
+    "name": "Aster",
+    "package": "asterdex/aster-connector-python",
+    "package_install": "pip install git+https://github.com/asterdex/aster-connector-python.git",
+    "package_version": "git-only (not published to PyPI)",
+    "repo_url": "https://github.com/asterdex/api-docs",
+    "docs_url": "https://asterdex.github.io/aster-api-website/",
+    "demo_flag": "ASTER_TESTNET=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/aster.md",
+    "mirror_url_web": "https://algovault.com/integrations/aster",
+    "tagline": "Composite verdict + Aster futures testnet (V3 EIP-712; V1 keys closed 2026-03-25)",
+    "recipes": [
+      "regime-gated-entries",
+      "binance-shaped-client-port",
+      "v3-eip712-signing"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "bingx",
+    "name": "BingX",
+    "package": "(no official SDK \u2014 plain fetch + node:crypto)",
+    "package_install": "no install required",
+    "package_version": "n/a",
+    "repo_url": "https://github.com/BingX-API",
+    "docs_url": "https://bingx-api.github.io/docs/",
+    "demo_flag": "BINGX_TESTNET=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/bingx.md",
+    "mirror_url_web": "https://algovault.com/integrations/bingx",
+    "tagline": "Composite verdict + BingX VST demo trading (dry-run order/test + API faucet)",
+    "recipes": [
+      "regime-gated-entries",
+      "validate-before-place",
+      "vst-faucet-from-code"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "kucoin",
+    "name": "KuCoin",
+    "package": "kucoin-universal-sdk",
+    "package_install": "npm install kucoin-universal-sdk",
+    "package_version": "1.3.1",
+    "repo_url": "https://github.com/Kucoin/kucoin-universal-sdk",
+    "docs_url": "https://www.kucoin.com/docs-new",
+    "demo_flag": "KUCOIN_DRY_RUN=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/kucoin.md",
+    "mirror_url_web": "https://algovault.com/integrations/kucoin",
+    "tagline": "Composite verdict + KuCoin Futures order VALIDATION (no sandbox: retired 2023-07-10)",
+    "recipes": [
+      "regime-gated-entries",
+      "kc-api-header-family",
+      "validation-to-live-promotion"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "gemini",
+    "name": "Gemini",
+    "package": "(self-hosted MCP)",
+    "package_install": "see tutorial",
+    "package_version": "n/a",
+    "repo_url": "https://github.com/gemini",
+    "docs_url": "https://docs.gemini.com/",
+    "demo_flag": "GEMINI_SANDBOX=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/gemini.md",
+    "mirror_url_web": "https://algovault.com/integrations/gemini",
+    "tagline": "Composite verdict + Gemini self-hosted MCP execution kit",
+    "recipes": [
+      "regime-gated-entries",
+      "confidence-filtered-entry",
+      "sandbox-validation"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "kraken",
+    "name": "Kraken",
+    "package": "(CLI kit)",
+    "package_install": "see tutorial",
+    "package_version": "n/a",
+    "repo_url": "https://github.com/krakenfx",
+    "docs_url": "https://docs.kraken.com/",
+    "demo_flag": "KRAKEN_TESTNET=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/kraken.md",
+    "mirror_url_web": "https://algovault.com/integrations/kraken",
+    "tagline": "Composite verdict + Kraken CLI execution kit",
+    "recipes": [
+      "regime-gated-entries",
+      "confidence-filtered-entry",
+      "demo-validation"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
+  },
+  {
+    "slug": "alpaca",
+    "name": "Alpaca",
+    "package": "(crypto MCP)",
+    "package_install": "see tutorial",
+    "package_version": "n/a",
+    "repo_url": "https://github.com/alpacahq",
+    "docs_url": "https://docs.alpaca.markets/",
+    "demo_flag": "ALPACA_PAPER=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/alpaca.md",
+    "mirror_url_web": "https://algovault.com/integrations/alpaca",
+    "tagline": "Composite verdict + Alpaca crypto MCP paper-trading execution kit",
+    "recipes": [
+      "regime-gated-entries",
+      "confidence-filtered-entry",
+      "paper-trading-validation"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
   }
 ]

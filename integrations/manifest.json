@@ -306,5 +306,33 @@
       "path": "/assets/logos/binance.svg",
       "invert": false
     }
+  },
+  {
+    "slug": "gateio",
+    "name": "Gate.io",
+    "package": "gate-api",
+    "package_install": "pip install gate-api",
+    "package_version": "7.2.100",
+    "repo_url": "https://github.com/gate/gateapi-python",
+    "docs_url": "https://www.gate.com/docs/developers/apiv4/en/",
+    "demo_flag": "GATEIO_TESTNET=true",
+    "tutorial_url_repo": "https://github.com/AlgoVaultLabs/algovault-skills/blob/main/docs/integrations/gateio.md",
+    "mirror_url_web": "https://algovault.com/integrations/gateio",
+    "tagline": "Composite verdict + Gate.io futures testnet (contracts-aware sizing; SDK's default testnet host is stale)",
+    "recipes": [
+      "size-in-contracts-not-coins",
+      "direction-is-sign-of-size",
+      "hmac-sha512-five-line-signature"
+    ],
+    "demo_url": "https://github.com/AlgoVaultLabs/algovault-skills/tree/main/examples/binance",
+    "devto_url": "MANUAL_PENDING",
+    "community_submission_url": "MANUAL_PENDING",
+    "status": "LIVE",
+    "launch_date": "2026-03-03",
+    "icon": "\ud83c\udfc6",
+    "logo": {
+      "path": "/assets/logos/binance.svg",
+      "invert": false
+    }
   }
 ]

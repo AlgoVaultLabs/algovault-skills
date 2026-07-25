@@ -12,7 +12,7 @@ AlgoVault MCP gives your CrewAI agents a **composite verdict** in one call -- di
 ## TL;DR (3-line hook)
 
 - One tool call returns a composite verdict: call, confidence, regime, indicators. Not 26 raw signals to vote-count.
-- Cross-venue signal across 5 crypto perp venues: Binance, Bybit, OKX, Bitget, Hyperliquid. Funding spreads, regime alignment, volatility -- fused.
+- Cross-venue signal across major crypto perpetual-futures venues. Funding spreads, regime alignment, volatility -- fused.
 - Every signal Merkle-anchored on Base L2. Verifiable track record, not a marketing claim.
 
 ## What you'll build (90s read)
@@ -104,7 +104,7 @@ The 4 keys (`call`, `confidence`, `indicators`, `regime`) are the documented con
 |---|---|
 | `get_trade_call` | Composite BUY/SELL/HOLD verdict + confidence + regime + indicators for one coin + timeframe |
 | `get_trade_call` | Back-compat alias of `get_trade_call` (same payload shape) |
-| `scan_funding_arb` | Rank funding-spread opportunities across the 5 venues |
+| `scan_funding_arb` | Rank funding-spread opportunities across the venues |
 | `get_market_regime` | Regime classification (TRENDING_UP / TRENDING_DOWN / RANGING / VOLATILE) for one coin + timeframe |
 
 Each is invokable directly via `tool.run(**kwargs)`, or assignable to a CrewAI `Agent` for LLM-driven tool selection.
@@ -144,7 +144,7 @@ Requires an LLM provider key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc) plus a
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.
-- **Cross-venue signal.** Funding spreads, regime, and sentiment fused across 5 venues -- not derivable from any single-venue API.
+- **Cross-venue signal.** Funding spreads, regime, and sentiment fused across venues -- not derivable from any single-venue API.
 - **Publicly verified.** Every signal anchored to Base L2 via Merkle proof. Verify before you subscribe.
 - <!-- snapshot: 2026-07-21 -- live source of truth: /api/performance-public + /api/merkle-batches -->
 <strong><span data-tr-field="pfe_wr">91.5%</span> PFE Win Rate · <span data-tr-field="call_count">383,789</span>+ calls · <span data-tr-field="merkle_batch_count">100</span>+ on-chain batches</strong> → [view live track record](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-crewai)

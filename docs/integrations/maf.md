@@ -5,7 +5,7 @@
 > Don't trust - [verify the track record &rarr;](https://algovault.com/track-record?utm_source=tutorial&utm_medium=repo&utm_campaign=integration-maf)
 > *Snapshot taken 2026-05-18 - live numbers refreshed in-page from <https://algovault.com/api/performance-public>*
 
-Composite BUY/SELL/HOLD trade calls across 5 crypto perp venues. Verified track record, Merkle-anchored on Base L2. Drop AlgoVault MCP into any [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) `ChatAgent` via the built-in `MCPStreamableHTTPTool` and your agent has both the analytics brain and a clean path to multi-agent orchestration across the Microsoft ecosystem.
+Composite BUY/SELL/HOLD trade calls across major crypto perpetual-futures venues. Verified track record, Merkle-anchored on Base L2. Drop AlgoVault MCP into any [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) `ChatAgent` via the built-in `MCPStreamableHTTPTool` and your agent has both the analytics brain and a clean path to multi-agent orchestration across the Microsoft ecosystem.
 
 > **Provenance:** OFFICIAL [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) (`github.com/microsoft/agent-framework` &middot; GA 1.0 April 2026 &middot; the Microsoft-anointed successor to AutoGen, which is now in maintenance mode). The MCP class used here, `agent_framework.MCPStreamableHTTPTool`, is documented at [Microsoft Learn](https://learn.microsoft.com/en-us/python/api/agent-framework-core/agent_framework.mcpstreamablehttptool?view=agent-framework-python-latest). Verified 2026-05-18.
 
@@ -170,7 +170,7 @@ The agent calls `get_trade_call` for `ETH` on `1h`. The policy fires only when `
 
 ### Recipe 3 - Funding-arb opportunity awareness
 
-Your agent calls `scan_funding_arb` to retrieve top funding-spread opportunities across the 5 venues AlgoVault monitors. Output is a ranked list of `{coin, longVenue, shortVenue, spreadBps}` rows. The agent uses the rank to surface awareness and route execution decisions to your risk policy. AlgoVault returns the opportunity; your agent decides whether to act.
+Your agent calls `scan_funding_arb` to retrieve top funding-spread opportunities across the venues AlgoVault monitors. Output is a ranked list of `{coin, longVenue, shortVenue, spreadBps}` rows. The agent uses the rank to surface awareness and route execution decisions to your risk policy. AlgoVault returns the opportunity; your agent decides whether to act.
 
 ## Production setup
 

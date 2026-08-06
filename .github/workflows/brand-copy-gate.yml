@@ -1,0 +1,56 @@
+name: Brand copy gate
+
+# CROSS-REPO-TUTORIAL-PRODUCER-GATE-W1 — enforce the forbidden-phrase blocklist on
+# the tutorial PRODUCERS in this repo.
+#
+# WHY THIS WORKFLOW EXISTS. docs/integrations/*.md here generates
+# landing/integrations/*.html in crypto-quant-signal-mcp, and that repo gates its
+# copy. This one did not: measured 2026-08-06, NO workflow here ran on a
+# docs/** push at all — publish.yml fires only on v* tags, marketplace-check.yml is
+# scheduled, and dispatch-landing-rebuild.yml watches only the two manifest.json
+# files. So a retired claim could be edited into a producer and reach 8 public
+# pages with every check green. "20 calls/day" did exactly that, and _template.md
+# was re-seeding it into every future exchange tutorial.
+#
+# A blocklist that only runs when someone remembers is not a gate.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'ops/brand-forbidden-phrases.json'
+      - 'ops/brand-forbidden-phrases.json.sha256'
+      - 'scripts/check-brand-copy.mjs'
+      - 'tests/unit/brand-blocklist-parity.test.mjs'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'ops/brand-forbidden-phrases.json'
+      - 'ops/brand-forbidden-phrases.json.sha256'
+      - 'scripts/check-brand-copy.mjs'
+      - 'tests/unit/brand-blocklist-parity.test.mjs'
+  workflow_dispatch:
+
+jobs:
+  brand-copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The detector proves itself before it certifies anything. Fail-closed:
+      # a self-test that is not PASS blocks, it does not warn.
+      - name: Brand blocklist gate (self-test, then live scan — fail-closed)
+        run: |
+          node scripts/check-brand-copy.mjs --self-test
+          node scripts/check-brand-copy.mjs
+
+      # Vendored-copy parity. The hash catches tampering; the BEHAVIOUR assertions
+      # catch a re-vendor from a stale source that also re-records the hash, which
+      # a hash alone cannot see.
+      - name: Vendored blocklist parity + behaviour
+        run: node --test tests/unit/brand-blocklist-parity.test.mjs

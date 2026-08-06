@@ -24,42 +24,163 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify MCP server reachable
+        env:
+          MCP_URL: ${{ vars.MARKETPLACE_CANARY_MCP_URL || 'https://api.algovault.com/mcp' }}
         run: |
-          # Same handshake as scripts/skills_preflight.sh
+          set -uo pipefail
+          # ── OPS-MARKETPLACE-CANARY-REPAIR-W1 (2026-08-06) ────────────────────────────
+          # THIS STEP FAILED 40 CONSECUTIVE RUNS (2026-06-27 → 2026-08-05) on one line:
+          # it asserted `test -n "$SID"`, requiring an Mcp-Session-Id response header.
+          #
+          # The remote transport runs STATELESS by default (CLAUDE.md §Build rules:
+          # `sessionIdGenerator: undefined`, fresh McpServer+transport per POST), and a
+          # stateless transport emits NO session header. Verified 2026-08-06: 24 response
+          # headers, no mcp-session-id, and the handshake completes fine without one.
+          #
+          # `MCP_STATELESS=0` is a live rollback lever that WOULD make the server emit one,
+          # so the session id is treated as OPTIONAL rather than deleted: captured if
+          # present, sent if captured, never fatal if absent. That keeps this canary
+          # correct in BOTH transport modes — deleting the check outright would leave it
+          # silently no-op'ing the day the lever flips back.
+          #
+          # Emits exactly one terminal MARKETPLACE_CANARY_VERDICT= line. Fail-closed:
+          # an unreachable server or an unparseable body is INDETERMINATE, never PASS.
           ACCEPT="application/json, text/event-stream"
-          curl -fsS -D /tmp/init.h -X POST https://api.algovault.com/mcp \
-            -H "Content-Type: application/json" -H "Accept: $ACCEPT" \
-            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"marketplace-check","version":"0"}}}' \
-            >/dev/null
-          SID=$(grep -i '^mcp-session-id:' /tmp/init.h | tr -d '\r' | awk '{print $2}')
-          test -n "$SID"
-          curl -fsS -X POST https://api.algovault.com/mcp \
-            -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
-            -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null
-          # Tool count assertion: permissive >=3 floor.
-          # Floor = 3 canonical tools (get_trade_call, scan_funding_arb, get_market_regime).
-          # Live surface adds backwards-compat aliases over time (e.g. get_trade_signal alias
-          # added in v1.10.0 per OUTPUT-SANITIZE-W1). Equality check `== 3` rotted silently
-          # for 5 days; the canary should detect tool-surface SHRINKAGE (real regression),
-          # not growth (additive aliasing).
-          TOOL_COUNT=$(curl -fsS -X POST https://api.algovault.com/mcp \
-            -H "Content-Type: application/json" -H "Accept: $ACCEPT" -H "mcp-session-id: $SID" \
-            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-            | sed -n 's/^data: //p' | head -1 | jq -r '.result.tools | length')
-          test "$TOOL_COUNT" -ge 3
+          CANONICAL="get_trade_call scan_funding_arb get_market_regime"
+          verdict() { echo "MARKETPLACE_CANARY_VERDICT=$1"; case "$1" in PASS) exit 0;; FAIL) exit 1;; *) exit 3;; esac; }
 
-      - name: Verify Smithery listing (20 skills under algovault namespace)
+          if ! curl -fsS -D /tmp/init.h -X POST "$MCP_URL" \
+              -H "Content-Type: application/json" -H "Accept: $ACCEPT" \
+              -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"marketplace-check","version":"0"}}}' \
+              -o /tmp/init.body; then
+            echo "  x initialize: server unreachable or non-2xx at $MCP_URL"
+            verdict INDETERMINATE
+          fi
+          echo "  + initialize: 2xx from $MCP_URL"
+
+          # OPTIONAL by design — see the note above. Report which mode we observed.
+          SID=$(grep -i '^mcp-session-id:' /tmp/init.h | tr -d '\r' | awk '{print $2}')
+          if [ -n "$SID" ]; then
+            echo "  + session: Mcp-Session-Id present (stateful mode, MCP_STATELESS=0)"
+            SID_HDR=(-H "mcp-session-id: $SID")
+          else
+            echo "  + session: no Mcp-Session-Id (stateless default — expected, not a failure)"
+            SID_HDR=()
+          fi
+          # NOTE: expanded below as ${SID_HDR[@]+"${SID_HDR[@]}"} — under `set -u` bash 3.2
+          # errors on "${arr[@]}" for an EMPTY array (bash 4.4+ does not). The guarded form
+          # works on both, which is what makes this step dry-runnable on a Mac before it
+          # ever reaches an ubuntu runner. Do not "simplify" it.
+
+          if ! curl -fsS -X POST "$MCP_URL" \
+              -H "Content-Type: application/json" -H "Accept: $ACCEPT" ${SID_HDR[@]+"${SID_HDR[@]}"} \
+              -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null; then
+            echo "  x notifications/initialized failed"
+            verdict INDETERMINATE
+          fi
+          echo "  + notifications/initialized: accepted"
+
+          # Body may be SSE-framed (text/event-stream, the live default) or plain JSON.
+          # Branch on what arrives; keep both paths working.
+          if ! curl -fsS -D /tmp/tl.h -X POST "$MCP_URL" \
+              -H "Content-Type: application/json" -H "Accept: $ACCEPT" ${SID_HDR[@]+"${SID_HDR[@]}"} \
+              -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' -o /tmp/tl.body; then
+            echo "  x tools/list request failed"
+            verdict INDETERMINATE
+          fi
+          if grep -qi '^content-type:.*text/event-stream' /tmp/tl.h; then
+            FRAMING="SSE"; JSON=$(sed -n 's/^data: //p' /tmp/tl.body | head -1)
+          else
+            FRAMING="plain-JSON"; JSON=$(cat /tmp/tl.body)
+          fi
+          NAMES=$(printf '%s' "$JSON" | jq -r '.result.tools[].name' 2>/dev/null)
+          if [ -z "$NAMES" ]; then
+            echo "  x tools/list body unparseable (framing=$FRAMING)"
+            verdict INDETERMINATE
+          fi
+          TOOL_COUNT=$(printf '%s\n' "$NAMES" | grep -c .)
+          echo "  + tools/list: framing=$FRAMING, $TOOL_COUNT tool(s)"
+
+          # Permissive >=3 FLOOR, deliberately not equality.
+          # Live surface adds backwards-compat aliases over time (e.g. get_trade_signal
+          # added in v1.10.0 per OUTPUT-SANITIZE-W1). An `== 3` check rotted silently for
+          # 5 days; this canary must detect SHRINKAGE (a real regression), not growth.
+          RC=0
+          if [ "$TOOL_COUNT" -ge 3 ]; then
+            echo "  + tool-count floor: $TOOL_COUNT >= 3"
+          else
+            echo "  x tool-count floor: $TOOL_COUNT < 3 — the tool surface SHRANK"; RC=1
+          fi
+
+          # A count of 3 satisfied by three DIFFERENT tools is a regression the floor
+          # alone would pass. Assert the canonical three by name.
+          for t in $CANONICAL; do
+            if printf '%s\n' "$NAMES" | grep -qx "$t"; then
+              echo "  + canonical tool present: $t"
+            else
+              echo "  x canonical tool MISSING: $t"; RC=1
+            fi
+          done
+
+          [ "$RC" -eq 0 ] && verdict PASS || verdict FAIL
+
+      # OPS-MARKETPLACE-CANARY-REPAIR-W1: `if: always()` is the actual fix here, and it
+      # matters more than the continue-on-error question everyone looks at first.
+      # MEASURED across the last 10 runs: this step's conclusion was `skipped` EVERY time —
+      # GitHub Actions skips remaining steps once an earlier one fails, so while the MCP
+      # step was red for 40 consecutive runs this check never executed at all and
+      # continue-on-error never even came into play. It produced zero information for 40
+      # days, for a reason unrelated to the flag it carries.
+      #
+      # STAYS ADVISORY, and the reason is stated rather than assumed: smithery.ai is a
+      # third party, a transient outage there is not an AlgoVault regression, and a canary
+      # that cries wolf is the one people learn to ignore — which is how the MCP failure
+      # went unnoticed. Measured 2026-08-06: 20/20 live. That is ONE sample and not
+      # stability evidence, so promoting this to blocking waits until the step has actually
+      # accumulated history — it has never run. Its result is now VISIBLE in the job summary
+      # instead of buried in the log, so "advisory" no longer means "unread".
+      - name: Verify Smithery listing (all manifest skills under algovault namespace)
+        if: always()
         continue-on-error: true
         run: |
-          # CLI v4: per-skill model. Confirm all 20 manifest slugs are reachable.
-          OK=0; MISSING=0
+          TOTAL=$(jq -r '.[].slug' skills/manifest.json | grep -c .)
+          OK=0; MISSING=0; MISSING_SLUGS=""
           while IFS= read -r slug; do
-            CODE=$(curl -fsS -o /dev/null -w "%{http_code}" "https://smithery.ai/skills/algovault/$slug")
-            if [ "$CODE" = "200" ]; then OK=$((OK+1)); else MISSING=$((MISSING+1)); echo "  MISSING algovault/$slug (HTTP $CODE)"; fi
+            CODE=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 20 "https://smithery.ai/skills/algovault/$slug" 2>/dev/null || echo "ERR")
+            if [ "$CODE" = "200" ]; then OK=$((OK+1)); else MISSING=$((MISSING+1)); MISSING_SLUGS="$MISSING_SLUGS algovault/$slug(HTTP $CODE)"; echo "  x MISSING algovault/$slug (HTTP $CODE)"; fi
           done < <(jq -r '.[].slug' skills/manifest.json)
-          echo "SMITHERY: $OK/20 live, $MISSING missing"
-          test "$OK" = "20"
+          echo "  + SMITHERY: $OK/$TOTAL live, $MISSING missing"
+          # Visible where a human actually looks, not only in the raw log.
+          {
+            echo "### Smithery listings"
+            echo ""
+            if [ "$MISSING" -eq 0 ]; then
+              echo "✅ **$OK/$TOTAL live**, 0 missing."
+            else
+              echo "⚠️ **$OK/$TOTAL live, $MISSING MISSING** (advisory — does not fail the job)"
+              echo ""
+              echo "Missing:$MISSING_SLUGS"
+              echo ""
+              echo "Persistently missing listings are a DISTRIBUTION defect, not a canary defect — dispatch \`OPS-SMITHERY-LISTING-RECONCILE-W{NEXT}\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$OK" = "$TOTAL"
 
+      # OPS-MARKETPLACE-CANARY-REPAIR-W1: the canary being red is survivable; NOBODY KNOWING
+      # for 40 runs is the actual defect, and this step is why. It resolved both secrets to
+      # empty, printed one WARN line into a log nobody opens, and exited 0 — dark by
+      # construction. Measured: this repo holds ANTHROPIC_PR_TOKEN, MCP_REPO_DISPATCH_TOKEN
+      # and SMITHERY_API_KEY, and no Telegram credentials at all.
+      #
+      # ARCHITECT RULING: the primary alert does NOT live here. Duplicating bot credentials
+      # into a second repo was rejected; instead a scheduled detector in
+      # crypto-quant-signal-mcp reads this workflow's last conclusion and alerts through the
+      # existing, proven send_telegram.sh on the Hetzner host. This step stays as an
+      # opportunistic in-repo alert IF someone ever provisions the secrets.
+      #
+      # The fail-open shape is kept deliberately — a broken alerter must never mask a
+      # passing canary — but an UNCONFIGURED alerter is now loud at configuration time
+      # (job summary + ::warning annotation) instead of silent at failure time.
       - name: Telegram alert on failure
         if: failure()
         env:
@@ -67,7 +188,13 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "WARN: Telegram secrets not configured; cannot alert"
+            echo "::warning title=Marketplace canary alerting is UNCONFIGURED::This job FAILED and no in-repo Telegram alert could be sent. Primary alerting is the cross-repo detector in crypto-quant-signal-mcp (ops/monitoring). If that is also down, this failure reaches nobody."
+            {
+              echo "### ⚠️ In-repo alerting unconfigured"
+              echo ""
+              echo "This job failed and \`TELEGRAM_BOT_TOKEN\` / \`TELEGRAM_CHAT_ID\` are not set in this repo."
+              echo "By design: the primary alert is the cross-repo detector in \`crypto-quant-signal-mcp\`, which uses the existing \`send_telegram.sh\` on Hetzner so bot credentials live in one place."
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           MSG="🟡 AlgoVault Alert%0A%0Aalgovault-skills marketplace-check FAILED at $(date -u +%Y-%m-%dT%H:%M:%SZ)%0Acheck: gh run view ${{ github.run_id }}"

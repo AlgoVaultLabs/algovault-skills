@@ -23,6 +23,10 @@ on:
       - 'ops/brand-forbidden-phrases.json.sha256'
       - 'scripts/check-brand-copy.mjs'
       - 'tests/unit/brand-blocklist-parity.test.mjs'
+      # The workflow watches ITSELF. Without this, a change to the gate does not run
+      # the gate — which is how its own introducing commit shipped without ever
+      # executing (verified: the first live run had to be dispatched by hand).
+      - '.github/workflows/brand-copy-gate.yml'
   pull_request:
     paths:
       - 'docs/**'
@@ -30,6 +34,10 @@ on:
       - 'ops/brand-forbidden-phrases.json.sha256'
       - 'scripts/check-brand-copy.mjs'
       - 'tests/unit/brand-blocklist-parity.test.mjs'
+      # The workflow watches ITSELF. Without this, a change to the gate does not run
+      # the gate — which is how its own introducing commit shipped without ever
+      # executing (verified: the first live run had to be dispatched by hand).
+      - '.github/workflows/brand-copy-gate.yml'
   workflow_dispatch:
 
 jobs:

@@ -27,7 +27,7 @@ jobs:
         env:
           MCP_URL: ${{ vars.MARKETPLACE_CANARY_MCP_URL || 'https://api.algovault.com/mcp' }}
         run: |
-          set -uo pipefail
+          set -euo pipefail   # match the runner's `bash -e` explicitly, so local dry-runs reproduce CI
           # ── OPS-MARKETPLACE-CANARY-REPAIR-W1 (2026-08-06) ────────────────────────────
           # THIS STEP FAILED 40 CONSECUTIVE RUNS (2026-06-27 → 2026-08-05) on one line:
           # it asserted `test -n "$SID"`, requiring an Mcp-Session-Id response header.
@@ -59,7 +59,11 @@ jobs:
           echo "  + initialize: 2xx from $MCP_URL"
 
           # OPTIONAL by design — see the note above. Report which mode we observed.
-          SID=$(grep -i '^mcp-session-id:' /tmp/init.h | tr -d '\r' | awk '{print $2}')
+          # `|| true` is load-bearing: GitHub runs this as `bash -e {0}`, and a grep that
+          # legitimately finds NOTHING exits 1 — which -e treats as fatal even inside an
+          # assignment. Without it the step dies here, printing only the initialize line,
+          # which is indistinguishable from the bug this wave just fixed.
+          SID=$(grep -i '^mcp-session-id:' /tmp/init.h | tr -d '\r' | awk '{print $2}' || true)
           if [ -n "$SID" ]; then
             echo "  + session: Mcp-Session-Id present (stateful mode, MCP_STATELESS=0)"
             SID_HDR=(-H "mcp-session-id: $SID")
@@ -98,7 +102,7 @@ jobs:
             echo "  x tools/list body unparseable (framing=$FRAMING)"
             verdict INDETERMINATE
           fi
-          TOOL_COUNT=$(printf '%s\n' "$NAMES" | grep -c .)
+          TOOL_COUNT=$(printf '%s\n' "$NAMES" | grep -c . || true)
           echo "  + tools/list: framing=$FRAMING, $TOOL_COUNT tool(s)"
 
           # Permissive >=3 FLOOR, deliberately not equality.

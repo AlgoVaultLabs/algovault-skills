@@ -176,7 +176,7 @@ Your agent calls `scan_funding_arb` to retrieve top funding-spread opportunities
 
 - Pin `agent-framework==1.4.0` (or the latest stable from PyPI at deploy time).
 - Treat `MCPStreamableHTTPTool` connect/close in a single `async with` block per request OR keep one long-lived tool per worker - both are supported.
-- Free tier covers 20 calls/day per IP. For higher throughput, see <https://algovault.com/pricing>.
+- Free tier covers 100 calls/month. For higher throughput, see <https://algovault.com/pricing>.
 - AlgoVault provides analytics; your agent and your risk policy decide what (if anything) to execute.
 
 ## Why AlgoVault?

@@ -95,7 +95,7 @@ Expected output (last 3 lines):
 
 The script does three things in order:
 
-1. **Fetch the AlgoVault verdict.** The helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin, timeframe}`, and returns the parsed `signal` / `confidence` / `regime` / `factors` payload. Free tier covers up to 20 calls/day per IP — plenty for development.
+1. **Fetch the AlgoVault verdict.** The helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin, timeframe}`, and returns the parsed `signal` / `confidence` / `regime` / `factors` payload. Free tier covers 100 calls/month — plenty for development.
 
 2. **Apply the agent's policy.** When the verdict satisfies a pre-configured policy (e.g. *the agent's policy fires when `confidence > 70` AND `signal === 'BUY'`*), the script proceeds to the payload-building branch. The policy lives entirely in your code — AlgoVault returns the analytics; the agent decides.
 

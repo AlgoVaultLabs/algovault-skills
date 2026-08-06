@@ -103,7 +103,7 @@ The script does three things in order:
 
 1. **Resolve contract sizing.** It reads `quanto_multiplier` from the single-contract endpoint and converts the target coin quantity into an integer contract count. This step comes *first* because it is the one most likely to be silently wrong — see Recipe 1.
 
-2. **Fetch the AlgoVault verdict.** The helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin, timeframe}`, and returns the parsed `call` / `confidence` / `regime` / `reasoning` payload. Free tier covers up to 20 calls/day per IP — plenty for development.
+2. **Fetch the AlgoVault verdict.** The helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin, timeframe}`, and returns the parsed `call` / `confidence` / `regime` / `reasoning` payload. Free tier covers 100 calls/month — plenty for development.
 
 3. **Apply the agent's policy and build the order.** When the verdict satisfies a pre-configured policy (e.g. *the agent's policy fires when `confidence > 70` AND `call === 'BUY'`*), the script assembles the Gate order body and prints it. The policy lives entirely in your code — AlgoVault returns the analytics; the agent decides. The script aborts immediately if `GATEIO_TESTNET` is not set, and refuses to run if the base URL is not the testnet host.
 

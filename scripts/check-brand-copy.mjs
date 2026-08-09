@@ -150,17 +150,33 @@ export function selfTest() {
   let mustFire = 0;
   let mustNotFire = 0;
 
+  // RE-VENDORED 2026-08-09 (PRICING-FOLLOWUPS-GENERATOR-W1 CH4). The canonical blocklist RETIRED
+  // `per-day-quota` — ruling R-B gave the free tier a real per-UTC-day cap, so "100 calls/day"
+  // became an accurate statement the gate was blocking, and it blocked a deploy on legitimate
+  // copy. `free-hold-promise` replaced it: R-A made every verdict chargeable, so "HOLDs are free"
+  // is now a pricing misstatement, and the expensive kind — ~99% of verdicts are holds.
+  //
+  // The retired class's fixtures are kept INVERTED rather than deleted. They are the regression
+  // lock proving the ban is gone; without them a silently-reinstated pattern would block every
+  // pricing page again and every remaining assertion would still pass.
   const fixtures = {
-    'a.md': 'Free tier covers 20 calls/day per IP — plenty for development.',
-    'b.md': 'Free tier covers up to 20 calls/day per IP',
-    'c.md': 'Free tier covers 20 free calls/day',
-    'd.md': 'Free tier covers 20 calls per day',
-    'e.md': 'Free tier covers 25 calls/day',
-    'ok1.md': 'Free tier: 100 calls/month, every coin and timeframe.',
+    // LIVE class — the free-HOLD promise, in the paraphrases it actually shipped as.
+    'a.md': 'HOLD verdicts are free and never charged.',
+    'b.md': 'A HOLD is free, so scan as often as you like.',
+    'c.md': 'Batch scans give you free HOLDs at no quota cost.',
+    'd.md': 'A HOLD is never charged against your allowance.',
+    'e.md': "HOLDs don't count towards your monthly quota.",
+    'ok1.md': 'Free tier: 200 calls/month, every coin and timeframe.',
     // Real VENUE rate limits — exchange API facts that must survive untouched.
     'ok2.md': 'rate limits are **per-IP, not per-key** (2,400 weight/min, 1,200 order/min)',
     'ok3.md': '10/s per UID and 3/s per IP on the place-order endpoint.',
-    'ok4.md': '<!-- retired: 20 calls/day --> Free tier: 100 calls/month.',
+    'ok4.md': '<!-- retired: HOLDs are free --> Every verdict counts, HOLD included.',
+    // RETIRED class, inverted: a real daily cap is legitimate copy and must NOT fire.
+    'ok5.md': 'Free tier covers 100 calls/day per IP — plenty for development.',
+    'ok6.md': 'Starter covers 1,000 calls per day.',
+    // The TRUE statement of the same fact must not be collateral damage — the pattern is
+    // directional, requiring HOLD adjacent to a free/never-charged claim.
+    'ok7.md': 'Every verdict counts, HOLD included.',
   };
   const read = (p) => {
     if (!(p in fixtures)) throw new Error(`fixture missing: ${p}`);
@@ -181,14 +197,14 @@ export function selfTest() {
     mustFire++;
     if (checkBlocklist([f], read, bl, '').length !== 1) fails.push(`must fire on ${f}`);
   }
-  for (const f of ['ok1.md', 'ok2.md', 'ok3.md', 'ok4.md']) {
+  for (const f of ['ok1.md', 'ok2.md', 'ok3.md', 'ok4.md', 'ok5.md', 'ok6.md', 'ok7.md']) {
     mustNotFire++;
     if (checkBlocklist([f], read, bl, '').length !== 0) fails.push(`must NOT fire on ${f}`);
   }
 
   // Blockquote visibility — the trap that nearly made the sibling gate vacuous.
-  const bq = '> *Free tier covers 20 calls/day per IP*';
-  if (!/20 calls\/day/.test(stripCodeCommentsOnly(bq, 'x.md'))) {
+  const bq = '> *HOLD verdicts are free and never charged*';
+  if (!/HOLD verdicts are free/.test(stripCodeCommentsOnly(bq, 'x.md'))) {
     fails.push('stripCodeCommentsOnly() ate a markdown blockquote — the scan would be VACUOUS');
   }
 

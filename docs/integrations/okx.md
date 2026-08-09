@@ -93,7 +93,7 @@ Expected output (last 4 lines):
 
 The script does three things in order:
 
-1. **Fetch AlgoVault regime reads in parallel.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` for `BTC` / `ETH` / `SOL` on the `4h` timeframe (each call returns `regime` alongside the signal/confidence), and returns the parsed payloads. Free tier covers 100 calls/month — three regime reads per scan is ample for development.
+1. **Fetch AlgoVault regime reads in parallel.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` for `BTC` / `ETH` / `SOL` on the `4h` timeframe (each call returns `regime` alongside the signal/confidence), and returns the parsed payloads. Free tier covers {{PRICING.free_allowance}} — three regime reads per scan is ample for development.
 
 2. **Apply the agent's policy.** The agent's grid-bot policy fires only when at least one asset in the scan returns a `RANGING` regime (grid bots only profit in range-bound markets — running them in `TRENDING_*` or `VOLATILE` regimes destroys capital). The policy lives in your code — AlgoVault returns the regime classifications; the agent decides.
 

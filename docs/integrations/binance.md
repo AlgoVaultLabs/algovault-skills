@@ -88,7 +88,7 @@ Expected output (last 3 lines):
 
 The script does three things in order:
 
-1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin: 'ETH', timeframe: '1h'}`, and returns the parsed `signal`/`confidence`/`regime`/`factors` payload. Free tier covers 100 calls/month — plenty for development.
+1. **Fetch the AlgoVault verdict.** The shared helper opens an MCP session against `https://api.algovault.com/mcp`, calls `get_trade_call` with `{coin: 'ETH', timeframe: '1h'}`, and returns the parsed `signal`/`confidence`/`regime`/`factors` payload. Free tier covers {{PRICING.free_allowance}} — plenty for development.
 
 2. **Apply the agent's policy.** When the verdict satisfies the agent's pre-configured policy (`signal === 'BUY' AND confidence > 70`), the script proceeds to the execution branch. The policy lives in your code — AlgoVault returns the analytics; the agent decides.
 

@@ -14,7 +14,7 @@ Generating a real PR programmatically requires fork + branch + write SKILL.md + 
 
 Mirror an existing **merged** skill, not the README template (the README's `title:` field is stale — every merged skill uses `name:`):
 
-- Frontmatter: `name:` (slug), `description:`, `metadata.version`, `metadata.author`, `license`. (`skills/binance/binance/SKILL.md`, `skills/binance-web3/trading-signal/SKILL.md`.)
+- Frontmatter: `name:` (slug), `description:`, `metadata.version`, `metadata.author`. **No `license:` key** — measured 2026-08-26 across the merged tree, ZERO merged hub skills carry one in frontmatter, despite CONTRIBUTING.md requiring it. The tree is the schema; neither doc is. State the licence in body prose. (`skills/binance/binance/SKILL.md`, `skills/binance-web3/trading-signal/SKILL.md`.)
 - Path: `skills/<namespace>/<skill>/SKILL.md` — two levels. AlgoVault → `skills/algovault/signal-intelligence/SKILL.md`.
 - CONTRIBUTING **Trading Rules**: no promoting any asset, nothing presented as guaranteed/safe, **no wallet addresses**. Content neutral + factual + educational.
 - Canonical tool name is `get_trade_call` (the server marks the old alias `[ALIAS]`; the CI canary forbids the legacy name in this template).
@@ -73,9 +73,8 @@ description: |
   Skills Hub for execution. Read-only — never places an order. Tutorial:
   <TUTORIAL_URL>
 metadata:
-  version: 1.0.0  <!-- LITERAL: skill artifact version, not the MCP server semver -->
+  version: 1.1.0  <!-- LITERAL: skill artifact version, not the MCP server semver -->
   author: AlgoVaultFi
-license: MIT
 ---
 
 # AlgoVault Signal Intelligence — Composite Verdict for Crypto Perps
@@ -83,6 +82,34 @@ license: MIT
 > The Brain Layer for AI Trading Agents. AlgoVault returns the analytics verdict; your agent and its risk policy decide execution. It is **additive to <EXCHANGE_TITLE> execution, not a competitor** — read-only, never submits an order.
 
 Call this whenever an agent needs a single, backtested trading verdict for a crypto perpetual-futures asset instead of computing dozens of raw indicators itself. One MCP call returns direction, confidence, market regime, and the cross-venue factors behind it.
+
+## Pairing with Binance Agent OS
+
+Binance Agent OS gives an agent execution on Binance: OAuth at connect time, no API keys on the
+machine, and trading confined to an isolated Agentic sub-account. It has no withdrawal scope.
+
+What it does not have is a second venue. A cross-venue funding spread needs two, and a composite
+verdict needs more. That is the layer this skill supplies — the decision layer for an agent that
+is already executing through Binance Agent OS.
+
+Add both servers to one MCP client:
+
+```bash
+claude mcp add binance-mcp-server --transport http https://agent.binance.com/mcp/agentic
+
+claude mcp add --transport http --scope project algovault \
+  https://api.algovault.com/mcp?src=binance_agent_os
+```
+
+Then name the tool you want. With two servers connected an exchange-shaped prompt is ambiguous,
+and this skill exposes no exchange-operation tools, so nothing about that phrasing points at the
+verdict:
+
+> "Use AlgoVault's `get_trade_call` for BTC 15m on Binance. Show me signal, confidence and
+> regime. If signal is BUY and confidence is above 70, place a $100 market buy on Binance spot —
+> confirm with me before sending."
+
+Full walkthrough: https://algovault.com/integrations/binance-agent-os
 
 ## When to call
 

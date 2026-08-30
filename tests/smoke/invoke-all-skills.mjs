@@ -19,17 +19,27 @@
 //   on every response and proves provenance via tool name echo). This is a
 //   factual adjustment, not a weakening of the gate.
 //
-// Per Free-tier policy: 20 free calls/day per IP. Skills past the cap return
-// 429 and we mark them SKIP_RATE_LIMITED (not a failure).
+// Per Free-tier policy: 200 calls/month AND 100 per UTC day, per IP. (This said
+// "20 free calls/day" — that cap was retired by ruling R-B on 2026-08-09.) Calls
+// past either cap are refused and marked SKIP, not a failure.
+//
+// TWO KINDS OF REFUSAL, TWO SKIP TOKENS. `SKIP_QUOTA` is OUR allowance being spent:
+// the server returns isError=true with a structured `code: TIER_LIMIT_REACHED`.
+// `SKIP_RATE_LIMITED` is a short-window throttle, ours or an upstream venue's.
+// Both are capacity, neither is a broken skill. The distinction is worth keeping in
+// the summary line because they have different remedies — one waits for a reset
+// date, the other waits seconds. See tests/smoke/lib/classify-tool-error.mjs.
 //
 // Upstream rate-limit reality (verified live 2026-04-24): Hyperliquid's API
 // rate-limits the MCP server's outbound calls during bursts. When that
 // happens, our MCP returns HTTP 200 with body
 //   {"result":{"content":[{"text":"{\"error\":\"HL API 429: Too Many Requests\"}"}],"isError":true},...}
 // This is treated as SKIP_RATE_LIMITED (upstream provider constraint, not a
-// Skill defect). We pace inter-call delay at 2s to minimize burst-induced
+// Skill defect). It carries no structured code of its own, so that leg alone is
+// matched on text. We pace inter-call delay at 2s to minimize burst-induced
 // upstream throttling.
 
+import { classifyToolError } from "./lib/classify-tool-error.mjs";
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import { readFile } from "node:fs/promises";
@@ -133,7 +143,7 @@ test("smoke: invoke all 20 skills against live api.algovault.com", async (t) => 
       : "[smoke] initialized, stateless (server issued no mcp-session-id)",
   );
 
-  const results = { pass: 0, skip: 0, hardFail: 0 };
+  const results = { pass: 0, skip: 0, skipQuota: 0, skipThrottle: 0, hardFail: 0 };
 
   for (const entry of manifest) {
     const slug = entry.slug;
@@ -153,8 +163,9 @@ test("smoke: invoke all 20 skills against live api.algovault.com", async (t) => 
     try {
       const { rateLimited, body } = await callTool(sessionId, slug, expectedTool, payload.args);
       if (rateLimited) {
-        console.log(`SKIP_RATE_LIMITED: ${slug} — tool=${expectedTool} (free-tier 20/day cap hit)`);
+        console.log(`SKIP_RATE_LIMITED: ${slug} — tool=${expectedTool} (HTTP 429 throttle)`);
         results.skip += 1;
+        results.skipThrottle += 1;
         continue;
       }
       if (body.error) {
@@ -175,16 +186,22 @@ test("smoke: invoke all 20 skills against live api.algovault.com", async (t) => 
         results.hardFail += 1;
         continue;
       }
-      // Upstream rate-limit detection: MCP returns isError=true with an
-      // upstream-429 wrapper. Skip, don't fail.
+      // Refusal triage. Capacity (our allowance, or a throttle) is a SKIP; anything
+      // else is a defect in the skill. The classifier reads the structured `code`
+      // field first and falls back to text only for the upstream case, which has no
+      // code — see tests/smoke/lib/classify-tool-error.mjs for why.
       if (body?.result?.isError === true) {
         const errMsg = parsed.error || JSON.stringify(parsed).slice(0, 100);
-        if (/429|Too Many Requests|rate.?limit/i.test(errMsg)) {
-          console.log(`SKIP_RATE_LIMITED: ${slug} — upstream throttle: ${errMsg}`);
+        const verdict = classifyToolError(parsed, errMsg);
+        if (verdict.skip) {
+          const token = verdict.kind === "quota" ? "SKIP_QUOTA" : "SKIP_RATE_LIMITED";
+          console.log(`${token}: ${slug} — ${verdict.reason}`);
           results.skip += 1;
+          if (verdict.kind === "quota") results.skipQuota += 1;
+          else results.skipThrottle += 1;
           continue;
         }
-        console.error(`HARD FAIL: ${slug} — isError=true (non-rate-limit): ${errMsg}`);
+        console.error(`HARD FAIL: ${slug} — isError=true (${verdict.kind}): ${errMsg}`);
         results.hardFail += 1;
         continue;
       }
@@ -216,7 +233,19 @@ test("smoke: invoke all 20 skills against live api.algovault.com", async (t) => 
     await new Promise((r) => setTimeout(r, 2000));
   }
 
-  console.log(`\n[smoke] summary: PASS=${results.pass}  SKIP_RATE_LIMITED=${results.skip}  HARD_FAIL=${results.hardFail}`);
+  console.log(
+    `\n[smoke] summary: PASS=${results.pass}  ` +
+      `SKIP_QUOTA=${results.skipQuota}  SKIP_RATE_LIMITED=${results.skipThrottle}  ` +
+      `HARD_FAIL=${results.hardFail}`,
+  );
+  if (results.skipQuota > 0 && results.pass === 0) {
+    // Say it plainly rather than leaving a reader to infer it from the assertion
+    // below: this run proved nothing about the skills, and the reason is ours.
+    console.log(
+      "[smoke] every call was refused for allowance, not for a defect — " +
+        "the run is INCONCLUSIVE, not evidence that the skills are broken.",
+    );
+  }
   assert.equal(results.hardFail, 0, `expected 0 HARD FAIL, got ${results.hardFail}`);
   assert.ok(results.pass >= 15, `expected >=15 PASS, got ${results.pass}`);
 });

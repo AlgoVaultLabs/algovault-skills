@@ -76,34 +76,81 @@ test('every exemption carries a reason', () => {
 
 // ── BEHAVIOUR: what a hash cannot check ──────────────────────────────────────
 
+// RE-SCOPED 2026-08-29 (OPS-SKILLS-BLOCKLIST-PARITY-DESTALE-W1). These fixtures used to
+// target `per-day-quota`, and had been RED on a clean checkout since the blocklist was
+// re-vendored at 1aee754: that vendor retired the class, and the test asserting it still
+// fires was not brought along. An exemption and its test are a pair; so are a phrase class
+// and its behaviour lock.
+//
+// The retirement is correct and is NOT undone here. Ruling R-B (2026-08-09) gave the free
+// tier a real per-UTC-day cap, so `100 calls/day` became an accurate statement the gate was
+// blocking — it refused a deploy over legitimate copy. `free-hold-promise` replaced it:
+// ruling R-A made every verdict chargeable, so "HOLDs are free" is a pricing misstatement,
+// and the expensive kind, because ~99% of verdicts are holds.
+//
+// The fixtures deliberately mirror the ones in check-brand-copy.mjs selfTest(). That is not
+// accidental duplication — those fixtures ARE the declared contract, and this file's job is
+// to catch a vendored copy that no longer satisfies it. A fixture set of its own invention
+// would drift from the contract it is supposed to be pinning.
+//
+// The retired class's strings are kept, INVERTED, for the same reason selfTest() keeps them:
+// they are the regression lock proving the ban is gone. Delete them and a silently
+// reinstated pattern would block every pricing page again while every other assertion here
+// still passed.
 const FIXTURES = {
-  // must fire — the phrase CLASS, not one literal
-  'a.md': 'Free tier covers 20 calls/day per IP — plenty for development.',
-  'b.md': 'Free tier covers up to 20 calls/day per IP',
-  'c.md': 'Free tier covers 20 free calls/day',
-  'd.md': 'Free tier covers 20 calls per day',
-  'e.md': 'Free tier covers 25 calls/day',
-  // must NOT fire — the correction, and real VENUE API rate limits
-  'ok1.md': 'Free tier: 100 calls/month, every coin and timeframe.',
+  // must fire — the LIVE class, in the paraphrases it actually shipped as
+  'a.md': 'HOLD verdicts are free and never charged.',
+  'b.md': 'A HOLD is free, so scan as often as you like.',
+  'c.md': 'Batch scans give you free HOLDs at no quota cost.',
+  'd.md': 'A HOLD is never charged against your allowance.',
+  'e.md': "HOLDs don't count towards your monthly quota.",
+  // must NOT fire — the corrected allowance (200/month since ruling R-B, not the old 100)
+  'ok1.md': 'Free tier: 200 calls/month, every coin and timeframe.',
+  // must NOT fire — real VENUE API rate limits, exchange facts that survive untouched
   'ok2.md': 'rate limits are **per-IP, not per-key** (2,400 weight/min, 1,200 order/min)',
   'ok3.md': '10/s per UID and 3/s per IP on the place-order endpoint.',
+  'ok4.md': '<!-- retired: HOLDs are free --> Every verdict counts, HOLD included.',
+  // must NOT fire — RETIRED class, inverted: a real daily cap is legitimate copy now
+  'ok5.md': 'Free tier covers 100 calls/day per IP — plenty for development.',
+  'ok6.md': 'Starter covers 1,000 calls per day.',
+  // must NOT fire — the TRUE statement of the same fact is not collateral damage; the
+  // pattern is directional, needing HOLD adjacent to a free/never-charged claim
+  'ok7.md': 'Every verdict counts, HOLD included.',
 };
-const read = (f) => FIXTURES[f];
+const MUST_FIRE = ['a.md', 'b.md', 'c.md', 'd.md', 'e.md'];
+const MUST_NOT_FIRE = ['ok1.md', 'ok2.md', 'ok3.md', 'ok4.md', 'ok5.md', 'ok6.md', 'ok7.md'];
+const read = (f) => {
+  if (!(f in FIXTURES)) throw new Error(`fixture missing: ${f}`);
+  return FIXTURES[f];
+};
 
-test('fires on every per-day quota phrasing, including a future number', () => {
+test('fires on every free-HOLD paraphrase, not just one literal', () => {
   const bl = loadBlocklist(JSON_PATH);
-  for (const f of ['a.md', 'b.md', 'c.md', 'd.md', 'e.md']) {
+  assert.ok(MUST_FIRE.length > 0, 'must-fire corpus is empty — this test would verify nothing');
+  for (const f of MUST_FIRE) {
     assert.equal(checkBlocklist([f], read, bl, '').length, 1, `should fire on ${f}`);
   }
 });
 
-test('spares the correction and real venue rate limits', () => {
+test('spares the correction, real venue rate limits, and the retired per-day class', () => {
   const bl = loadBlocklist(JSON_PATH);
-  for (const f of ['ok1.md', 'ok2.md', 'ok3.md']) {
+  assert.ok(
+    MUST_NOT_FIRE.length > 0,
+    'must-not-fire corpus is empty — this test would verify nothing',
+  );
+  // Non-vacuity: a blocklist that fires on NOTHING would pass every assertion below for the
+  // wrong reason. The must-fire test above is what makes these meaningful, so assert here
+  // that the class is actually live rather than trusting test ordering.
+  assert.equal(
+    checkBlocklist(['a.md'], read, bl, '').length,
+    1,
+    'the live class fires on nothing — every must-not-fire assertion below is vacuous',
+  );
+  for (const f of MUST_NOT_FIRE) {
     assert.equal(
       checkBlocklist([f], read, bl, '').length,
       0,
-      `${f} is legitimate exchange documentation and must never be flagged`,
+      `${f} is legitimate copy and must never be flagged`,
     );
   }
 });
@@ -111,8 +158,8 @@ test('spares the correction and real venue rate limits', () => {
 test('markdown blockquotes stay visible — the vacuity trap', () => {
   // Several producer defects live inside `> *…*`. A stripper that ate blockquotes
   // would make the whole scan pass over an empty corpus.
-  const bq = '> *Free tier covers 20 calls/day per IP*';
-  assert.match(stripCodeCommentsOnly(bq, 'x.md'), /20 calls\/day/);
+  const bq = '> *HOLD verdicts are free and never charged*';
+  assert.match(stripCodeCommentsOnly(bq, 'x.md'), /HOLD verdicts are free/);
 });
 
 test('loader is fail-closed on a missing file', () => {

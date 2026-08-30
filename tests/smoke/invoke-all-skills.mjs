@@ -61,18 +61,34 @@ async function initMcp() {
     }),
   });
   if (!r.ok) throw new Error(`initialize HTTP ${r.status}`);
-  const sid = r.headers.get("mcp-session-id");
-  if (!sid) throw new Error("initialize did not return mcp-session-id header");
+  // OPS-SKILLS-STATELESS-SESSION-SWEEP-W1: the remote MCP transport runs STATELESS
+  // (`sessionIdGenerator: undefined`, OPS-MCP-SESSION-RESILIENCE-W1), so `initialize`
+  // returns NO `mcp-session-id` header and the handshake completes fine without one.
+  // This used to throw, which failed the whole smoke suite before a single skill was
+  // invoked. The header is optional: forward it when the server sends one (stateful
+  // deployments / self-hosted stdio bridges), omit it when it does not. Empty string
+  // means "no session", which is a valid stateless call — the same contract
+  // examples/_shared/algovault-helper.mjs and marketplace-check.yml already follow.
+  //
+  // Note the only `mcp-session-id` in a live response is inside the CORS
+  // `access-control-allow-headers` list, not a header of its own — a substring grep
+  // for it reports a false positive.
+  const sid = r.headers.get("mcp-session-id") ?? "";
   // Drain body so the connection closes cleanly
   await r.text();
 
   // Send notifications/initialized (required by spec)
   await fetch(MCP_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: ACCEPT, "mcp-session-id": sid },
+    headers: { "Content-Type": "application/json", Accept: ACCEPT, ...sessionHeader(sid) },
     body: JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }),
   });
   return sid;
+}
+
+/** Omitted entirely when the server is stateless (sid === ""). */
+function sessionHeader(sid) {
+  return sid ? { "mcp-session-id": sid } : {};
 }
 
 function parseSse(text) {
@@ -88,7 +104,7 @@ async function callTool(sid, slug, tool, args) {
     headers: {
       "Content-Type": "application/json",
       Accept: ACCEPT,
-      "mcp-session-id": sid,
+      ...sessionHeader(sid),
       "X-AlgoVault-Skill-Slug": slug,
     },
     body: JSON.stringify({
@@ -111,7 +127,11 @@ test("smoke: invoke all 20 skills against live api.algovault.com", async (t) => 
   assert.equal(manifest.length, 20, "manifest must have 20 entries");
 
   sessionId = await initMcp();
-  console.log(`[smoke] initialized, sid=${sessionId.slice(0, 8)}...`);
+  console.log(
+    sessionId
+      ? `[smoke] initialized, sid=${sessionId.slice(0, 8)}...`
+      : "[smoke] initialized, stateless (server issued no mcp-session-id)",
+  );
 
   const results = { pass: 0, skip: 0, hardFail: 0 };
 

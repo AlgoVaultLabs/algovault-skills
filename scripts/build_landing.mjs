@@ -77,7 +77,7 @@ function replaceBlock(src, name, newInner) {
 const DIFFICULTY_BADGE = {
   Beginner: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
   Intermediate: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  Advanced: 'bg-gold-500/10 text-gold-400 border-gold-500/30',
+  Advanced: 'bg-brass-500/10 text-brass-400 border-brass-500/30',
   Research: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
   Expert: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
 };
@@ -90,15 +90,15 @@ function genSkillsGrid() {
     // WEBSITE-REFRESH-W1 follow-up: fire Plausible "Skill Install Click" on click.
     return `      <a href="https://github.com/AlgoVaultLabs/algovault-skills/tree/main/skills/${e.slug}?utm_source=skills_page&utm_medium=card&utm_campaign=skill-install-${e.slug}"
          onclick="if(window.plausible)plausible('Skill Install Click',{props:{slug:'${e.slug}',surface:'skills_page'}})"
-         class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
+         class="card-hover bg-navy-700 border border-line rounded-xl p-5 transition block">
         <div class="flex items-center gap-3 mb-2">
-          <span class="text-gold-400 font-mono text-xs font-bold bg-gold-400/10 px-2 py-0.5 rounded">${num}</span>
+          <span class="text-mint-400 font-mono text-xs font-bold bg-mint-400/10 px-2 py-0.5 rounded">${num}</span>
           <h3 class="text-white font-semibold text-sm flex-1">${e.name}</h3>
           <span class="text-[10px] px-2 py-0.5 rounded border ${badge}">${e.difficulty}</span>
         </div>
         <p class="text-gray-400 text-xs mb-3">${e.description}</p>
         <div class="text-gray-600 text-[11px]">Tools: ${tools}</div>
-        <div class="mt-3 text-gold-400 text-xs">View Skill on GitHub &rarr;</div>
+        <div class="mt-3 text-mint-400 text-xs">View Skill on GitHub &rarr;</div>
       </a>`;
   }).join('\n');
 }
@@ -118,7 +118,7 @@ function genIntegrationsIndexGrid() {
     const invertClass = e.logo.invert ? ' invert' : '';
     return `      <a href="/docs/integrations/${e.slug}?utm_source=integrations_index&utm_medium=card&utm_campaign=integration-${e.slug}"
          onclick="if(window.plausible)plausible('Integration View',{props:{exchange:'${e.slug}',source:'integrations_index'}})"
-         class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
+         class="card-hover bg-navy-700 border border-line rounded-xl p-5 transition block">
         <div class="flex items-center gap-3 mb-3">
           <img src="${e.logo.path}" alt="${e.name} logo" class="w-10 h-10 object-contain${invertClass}">
           <h3 class="text-white font-semibold text-base">${e.name} &times; AlgoVault</h3>
@@ -126,8 +126,8 @@ function genIntegrationsIndexGrid() {
         <p class="text-gray-400 text-xs mb-3">${e.tagline}.</p>
         <p class="text-gray-600 text-xs mb-3"><code class="text-xs">${packageDisplay}</code>${versionSuffix}</p>
         <div class="flex items-center gap-3 text-xs">
-          <span class="text-gold-400">View tutorial &rarr;</span>
-          <a href="${e.demo_url}" class="text-steel-400 hover:text-gold-400" onclick="event.stopPropagation()">Demo &rarr;</a>
+          <span class="text-mint-400">View tutorial &rarr;</span>
+          <a href="${e.demo_url}" class="text-steel-400 hover:text-mint-400" onclick="event.stopPropagation()">Demo &rarr;</a>
         </div>
       </a>`;
   }).join('\n');
@@ -144,12 +144,12 @@ function genUseCasesCards() {
     const invertClass = e.logo.invert ? ' invert' : '';
     return `      <a href="${e.mirror_url_web.replace('https://algovault.com', '')}?utm_source=index&utm_medium=use-cases-card&utm_campaign=integration-${e.slug}"
          onclick="if(window.plausible)plausible('Integration View',{props:{exchange:'${e.slug}',source:'use-cases-card'}})"
-         class="card-hover bg-navy-700 border border-white/5 rounded-xl p-5 hover:border-gold-500/40 transition block">
+         class="card-hover bg-navy-700 border border-line rounded-xl p-5 transition block">
         <img src="${e.logo.path}" alt="${e.name} logo" class="w-10 h-10 object-contain mb-3${invertClass}">
         <h3 class="text-white font-semibold text-base mb-1">${e.name} &times; AlgoVault</h3>
         <p class="text-gray-500 text-xs mb-3">${e.tagline}.</p>
         <p class="text-gray-600 text-xs mb-3"><code class="text-xs">${e.package}${e.package_version === 'verified-2026-04-25' ? '' : '@' + e.package_version}</code> ${e.package_version === 'verified-2026-04-25' ? '(verified ' + e.package_version.replace('verified-', '') + ')' : ''}</p>
-        <span class="text-gold-400 text-xs">View tutorial &rarr;</span>
+        <span class="text-mint-400 text-xs">View tutorial &rarr;</span>
       </a>`;
   }).join('\n')
     .replace(/\s+\(verified \)/g, '');

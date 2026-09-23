@@ -2,7 +2,19 @@ name: Marketplace Health Check
 
 on:
   schedule:
-    - cron: '0 8 * * *'   # daily 08:00 UTC
+    # OFF THE HOUR, and the reason is documented rather than stylistic. GitHub: "The `schedule`
+    # event can be delayed during periods of high loads of GitHub Actions workflow runs. High load
+    # times include the start of every hour… To decrease the chance of delay, schedule your
+    # workflow to run at a different time of the hour."
+    # (docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows,
+    # read 2026-09-22). This was the only on-the-hour schedule in the estate, and `0 8` bought
+    # nothing: measured across runs #93–#132, dispatch drifted to 11:46–20:08 UTC, an 8.4-hour
+    # spread. Moving it does NOT fix that — a cross-repo watcher cannot order itself after a job
+    # whose dispatch wanders 8 hours — and the real fix is that the watcher now dates every
+    # conclusion it reads (crypto-quant-signal-mcp, OPS-XREPO-CI-CONCLUSION-FRESHNESS-W1-V2).
+    # This is the documented mitigation, it costs nothing, and it brings the last on-the-hour
+    # schedule into line with the house convention.
+    - cron: '37 7 * * *'   # daily 07:37 UTC
   workflow_dispatch:
 
 jobs:
@@ -47,16 +59,101 @@ jobs:
           # an unreachable server or an unparseable body is INDETERMINATE, never PASS.
           ACCEPT="application/json, text/event-stream"
           CANONICAL="get_trade_call scan_funding_arb get_market_regime"
-          verdict() { echo "MARKETPLACE_CANARY_VERDICT=$1"; case "$1" in PASS) exit 0;; FAIL) exit 1;; *) exit 3;; esac; }
 
-          if ! curl -fsS -D /tmp/init.h -X POST "$MCP_URL" \
+          # ── OPS-XREPO-CI-CONCLUSION-FRESHNESS-W1-V2 CH4 (2026-09-23) ─────────────────
+          # RECOVER BEFORE YOU ALERT. Run #131 failed here on 2026-09-21 — step duration 20
+          # SECONDS — while #130 and #132 passed on the identical head SHA `ef5c025`. One
+          # sample in three. Each call below was a SINGLE un-retried `curl -fsS` against a
+          # live HTTP origin, so the origin's transient became this gate's verdict and paged
+          # a human. CLAUDE.md precedence rule 6 is Detect -> Recover -> Alert -> Escalate;
+          # one attempt performs no Recover at all.
+          #
+          # AND `-f` IS DROPPED ON PURPOSE. It suppresses the response body, which is the
+          # whole diagnosis: the old handler printed "server unreachable or non-2xx" with no
+          # code, no body and no timing, so nobody — with or without log access — could tell
+          # a 502 from a 429 from a DNS failure. Non-2xx detection moves to an explicit
+          # %{http_code} test, and the body's first 400 bytes are logged.
+          #
+          # HONEST SCOPE, stated rather than papered over (architect Q2=A): a BADGE IS
+          # TWO-VALUED. `MARKETPLACE_CANARY_VERDICT` distinguishes FAIL from INDETERMINATE,
+          # but both leave this job non-zero, the run conclusion collapses to `failure`, and
+          # the badge collapses it again to `failing`. So the cross-repo canary still reads a
+          # PERSISTENTLY unreachable server as `failing` rather than "could not verify".
+          # Accepted here: the retry above removes the transient class, which is the one that
+          # actually fired, and a persistent outage is a real red worth paging on. Splitting
+          # the reachability probe into its own workflow (two badges, two bits) was considered
+          # and deferred — it is not needed until a persistent outage is misread.
+          RETRIES=3
+          echo "  + curl: $(curl --version | head -1)"
+          if curl --help all 2>/dev/null | grep -q -- '--retry-all-errors'; then
+            CURL_RETRY="--max-time 20 --retry $RETRIES --retry-delay 5 --retry-connrefused --retry-all-errors"
+            OUTER=1; TRIES=$((RETRIES + 1))
+            MECH="curl built-in: --retry $RETRIES --retry-delay 5 --retry-connrefused --retry-all-errors (needs curl >= 7.71)"
+          else
+            # Never silently drop the flag: an older curl retries only connection failures, so
+            # the HTTP-error retry becomes an explicit loop and says so.
+            CURL_RETRY="--max-time 20 --retry $RETRIES --retry-delay 5 --retry-connrefused"
+            OUTER=$((RETRIES + 1)); TRIES=$OUTER
+            MECH="explicit bash loop x$OUTER (this curl predates --retry-all-errors)"
+          fi
+          echo "  + retry mechanism in force: $MECH"
+
+          verdict() {
+            echo "MARKETPLACE_CANARY_VERDICT=$1"
+            # Visible where a human actually looks, not only in the raw log. The HTTP code rides
+            # along on a non-PASS, because the first question about a red is always "what did the
+            # server actually say?".
+            {
+              echo "### MCP reachability"
+              echo ""
+              if [ "$1" = "PASS" ]; then
+                echo "✅ \`MARKETPLACE_CANARY_VERDICT=PASS\` — $MCP_URL"
+              else
+                echo "⚠️ \`MARKETPLACE_CANARY_VERDICT=$1\` — $MCP_URL (last HTTP code: \`${CODE:-none}\`, $TRIES attempt(s) via $MECH)"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+            case "$1" in PASS) exit 0;; FAIL) exit 1;; *) exit 3;; esac
+          }
+
+          # An EMPTY body says so. "(empty — the connection never produced one)" is a real
+          # diagnosis; a blank line after a label reads as a truncated log.
+          body_excerpt() {
+            if [ -s "$1" ]; then head -c 400 "$1" | tr -d '\0' | tr '\n' ' '
+            else printf '(empty — the connection never produced one)'; fi
+          }
+
+          # One request helper for all three calls: retry, capture the code, keep the body.
+          req() { # <out-body> <out-hdr> <curl args...>
+            local body="$1" hdr="$2"; shift 2
+            local attempt=0
+            CODE=000
+            # TRUNCATE FIRST. A failed curl writes nothing, so a leftover file from an earlier
+            # call would be printed as "the body that failed" — a stale extractor wearing a
+            # diagnosis's clothes, which is exactly the class this wave exists to retire. Caught
+            # in a local dry run: the unreachable-host case proudly quoted the PREVIOUS request's
+            # successful response.
+            : > "$body"; : > "$hdr"
+            while [ "$attempt" -lt "$OUTER" ]; do
+              attempt=$((attempt + 1))
+              CODE=$(curl -sS $CURL_RETRY -o "$body" -D "$hdr" -w '%{http_code}' "$@" 2>/tmp/curl.err) || CODE=000
+              case "$CODE" in 2*) [ "$OUTER" -gt 1 ] && TRIES=$attempt; return 0 ;; esac
+              [ "$attempt" -lt "$OUTER" ] && sleep 5
+            done
+            [ "$OUTER" -gt 1 ] && TRIES=$attempt
+            # curl's own retry warnings live on stderr; print them so the attempts are evidenced
+            # in the log rather than asserted in a sentence.
+            sed 's/^/      curl: /' /tmp/curl.err 2>/dev/null | head -20 || true
+            return 1
+          }
+
+          if ! req /tmp/init.body /tmp/init.h -X POST "$MCP_URL" \
               -H "Content-Type: application/json" -H "Accept: $ACCEPT" \
-              -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"marketplace-check","version":"0"}}}' \
-              -o /tmp/init.body; then
-            echo "  x initialize: server unreachable or non-2xx at $MCP_URL"
+              -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"marketplace-check","version":"0"}}}'; then
+            echo "  x initialize: HTTP $CODE after $TRIES attempt(s) at $MCP_URL"
+            echo "  x body (first 400B): $(body_excerpt /tmp/init.body)"
             verdict INDETERMINATE
           fi
-          echo "  + initialize: 2xx from $MCP_URL"
+          echo "  + initialize: HTTP $CODE from $MCP_URL"
 
           # OPTIONAL by design — see the note above. Report which mode we observed.
           # `|| true` is load-bearing: GitHub runs this as `bash -e {0}`, and a grep that
@@ -76,20 +173,22 @@ jobs:
           # works on both, which is what makes this step dry-runnable on a Mac before it
           # ever reaches an ubuntu runner. Do not "simplify" it.
 
-          if ! curl -fsS -X POST "$MCP_URL" \
+          if ! req /tmp/notif.body /tmp/notif.h -X POST "$MCP_URL" \
               -H "Content-Type: application/json" -H "Accept: $ACCEPT" ${SID_HDR[@]+"${SID_HDR[@]}"} \
-              -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null; then
-            echo "  x notifications/initialized failed"
+              -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'; then
+            echo "  x notifications/initialized: HTTP $CODE after $TRIES attempt(s)"
+            echo "  x body (first 400B): $(body_excerpt /tmp/notif.body)"
             verdict INDETERMINATE
           fi
-          echo "  + notifications/initialized: accepted"
+          echo "  + notifications/initialized: HTTP $CODE"
 
           # Body may be SSE-framed (text/event-stream, the live default) or plain JSON.
           # Branch on what arrives; keep both paths working.
-          if ! curl -fsS -D /tmp/tl.h -X POST "$MCP_URL" \
+          if ! req /tmp/tl.body /tmp/tl.h -X POST "$MCP_URL" \
               -H "Content-Type: application/json" -H "Accept: $ACCEPT" ${SID_HDR[@]+"${SID_HDR[@]}"} \
-              -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' -o /tmp/tl.body; then
-            echo "  x tools/list request failed"
+              -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'; then
+            echo "  x tools/list: HTTP $CODE after $TRIES attempt(s)"
+            echo "  x body (first 400B): $(body_excerpt /tmp/tl.body)"
             verdict INDETERMINATE
           fi
           if grep -qi '^content-type:.*text/event-stream' /tmp/tl.h; then

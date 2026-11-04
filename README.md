@@ -20,6 +20,47 @@ claude plugin install AlgoVaultLabs/algovault-skills
 Live track record (PFE Win Rate + cumulative call count, updated continuously):
 **https://algovault.com/track-record**
 
+## Pre-trade gate (Claude Code)
+
+A second, opt-in plugin in this marketplace. While it is enabled, Claude Code does not send an
+opening perpetual or futures order through an exchange's MCP tools until `pre_trade_check` has
+recently checked that coin and side, and it blocks the order when the check returns WAIT.
+
+```bash
+claude plugin marketplace add AlgoVaultLabs/algovault-skills
+claude plugin install algovault-pre-trade-gate@algovault-skills
+```
+
+Requires Node.js 20+ and Claude Code 2.1.295+, the version that honours `onFailure: "block"`:
+a gate that cannot run blocks the order instead of letting it through. The plugin holds no key
+and never calls AlgoVault itself. It reads the result of the `pre_trade_check` your agent runs,
+so connect the AlgoVault MCP server as usual.
+
+- **Gated:** an opening order on a perpetual or futures contract. OKX `swap_place_order`,
+  `futures_place_order`, `swap_batch_orders` (place), `futures_batch_orders`,
+  `swap_place_algo_order` and `swap_place_move_stop_order`; Bybit `createOrder` and
+  `batchCreateOrders` (linear and inverse); and a `place_order`, `create_order` or
+  `open_position` tool whose input names a coin and a side. Each leg of a batch needs its own check.
+- **Passes:** a check from this session for the same coin and side, at most 15 minutes old,
+  that returned GO or CAUTION. The agent is shown the decision, its reason codes, the checked
+  size and the cheapest venue. The gate matches coin and side, not size.
+- **Blocked:** no recent check, a WAIT, or an order the gate cannot read. The agent sees why,
+  for example `pre-trade gate: Missing check for BTC long. Run pre_trade_check first (or use
+  reduce-only to close).`
+- **Never gated:** closes (reduce-only, or a hedge-mode close), spot, options, cancels, amends,
+  and every AlgoVault tool.
+
+Options, in `/config` or with `claude plugin configure algovault-pre-trade-gate@algovault-skills`:
+`max_age_minutes` (1 to 240, default 15), `on_wait` (`deny` or `ask`, default `deny`; `ask`
+lets a person approve a WAIT), and `order_tools` (a regular expression over the full tool name,
+such as `mcp__hyperliquid__(place_order|market_open)`, that replaces the built-in list).
+
+Switch it off:
+
+```bash
+claude plugin disable algovault-pre-trade-gate@algovault-skills
+```
+
 ## Integrations
 
 End-to-end tutorials pairing AlgoVault's analytics with each major exchange's

@@ -227,6 +227,105 @@ jobs:
 
           [ "$RC" -eq 0 ] && verdict PASS || verdict FAIL
 
+      # DECISION-CALL-V2-W3: the pre-trade gate plugin (plugins/pre-trade-gate) can only pass
+      # an order after its PostToolUse hook has recorded a pre_trade_check. This leg makes one
+      # keyless pre_trade_check (BTC long 1000) on the transport above and feeds the result to
+      # the hook script exactly as Claude Code would, so a change on either side of that
+      # contract (the check's response shape, or the record parser) turns this job red.
+      #
+      # Emits exactly one terminal PRE_TRADE_GATE_CANARY_VERDICT= line:
+      #   PASS  the gate recorded the check's decision
+      #   SKIP  the keyless allowance is spent (classifyToolError: quota or upstream throttle);
+      #         the job stays green, since a spent allowance says nothing about the gate
+      #   FAIL  anything else: no answer, a refusal that is not a quota, or no recorded decision
+      - name: Pre-trade gate canary (one keyless pre_trade_check, recorded by the gate)
+        env:
+          MCP_URL: ${{ vars.MARKETPLACE_CANARY_MCP_URL || 'https://api.algovault.com/mcp' }}
+        run: |
+          set -euo pipefail
+          ROOT="${GITHUB_WORKSPACE:-$PWD}"
+          WORK=$(mktemp -d)
+          ACCEPT="application/json, text/event-stream"
+
+          verdict() {
+            echo "PRE_TRADE_GATE_CANARY_VERDICT=$1"
+            {
+              echo "### Pre-trade gate"
+              echo ""
+              echo "\`PRE_TRADE_GATE_CANARY_VERDICT=$1\` — $2"
+            } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+            case "$1" in PASS|SKIP) exit 0;; *) exit 1;; esac
+          }
+
+          # The same retry as the reachability step: a transient must not become the verdict.
+          CURL=(curl -sS --max-time 20 --retry 3 --retry-delay 5 --retry-connrefused)
+          if curl --help all 2>/dev/null | grep -q -- '--retry-all-errors'; then CURL+=(--retry-all-errors); fi
+          post() { # <out-file> <json-rpc body>; prints the HTTP code
+            "${CURL[@]}" -o "$1" -D "$1.h" -w '%{http_code}' -X POST "$MCP_URL" \
+              -H "Content-Type: application/json" -H "Accept: $ACCEPT" ${SID_HDR[@]+"${SID_HDR[@]}"} \
+              -d "$2" 2>"$1.err" || true   # a failed call prints 000 through -w
+          }
+
+          SID_HDR=()
+          CODE=$(post "$WORK/init" '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-05","capabilities":{},"clientInfo":{"name":"pre-trade-gate-canary","version":"0"}}}')
+          case "$CODE" in 2*) ;; *) verdict FAIL "initialize answered HTTP $CODE";; esac
+          # Optional session id, as above: sent only when the server issues one.
+          SID=$(grep -i '^mcp-session-id:' "$WORK/init.h" | tr -d '\r' | awk '{print $2}' || true)
+          if [ -n "$SID" ]; then SID_HDR=(-H "mcp-session-id: $SID"); fi
+
+          CODE=$(post "$WORK/call" '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"pre_trade_check","arguments":{"coin":"BTC","side":"long","sizeUsd":1000}}}')
+          case "$CODE" in 2*) ;; *) verdict FAIL "tools/call answered HTTP $CODE";; esac
+          if grep -qi '^content-type:.*text/event-stream' "$WORK/call.h"; then
+            sed -n 's/^data: //p' "$WORK/call" | head -1 > "$WORK/rpc.json"
+          else
+            cp "$WORK/call" "$WORK/rpc.json"
+          fi
+
+          cat > "$WORK/canary.mjs" <<'JS'
+          import { readFileSync, readdirSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          import { join } from 'node:path';
+          import { pathToFileURL } from 'node:url';
+          const [rpcFile, dataDir, root] = process.argv.slice(2);
+          const say = (v, d) => { console.log(`${v}|${String(d).split('\n')[0].slice(0, 300)}`); process.exit(0); };
+          let rpc;
+          try { rpc = JSON.parse(readFileSync(rpcFile, 'utf8')); } catch { say('FAIL', 'the tools/call body is unreadable'); }
+          if (rpc.error) say('FAIL', `JSON-RPC error: ${rpc.error.message ?? JSON.stringify(rpc.error)}`);
+          const result = rpc.result;
+          if (!result || !Array.isArray(result.content)) say('FAIL', 'the tools/call result has no content');
+          const text = result.content.find((b) => b && b.type === 'text')?.text ?? '';
+          let parsed = null;
+          try { parsed = JSON.parse(text); } catch {}
+          if (result.isError) {
+            const { classifyToolError } = await import(pathToFileURL(join(root, 'tests/smoke/lib/classify-tool-error.mjs')).href);
+            const c = classifyToolError(parsed, parsed?.error ?? parsed?.message ?? text);
+            if (c.skip) say('SKIP', `${c.kind}: ${c.reason}`);
+            say('FAIL', `the check was refused: ${c.reason}`);
+          }
+          const hook = {
+            hook_event_name: 'PostToolUse', session_id: 'marketplace-canary', tool_use_id: 'canary',
+            tool_name: 'mcp__algovault__pre_trade_check',
+            tool_input: { coin: 'BTC', side: 'long', sizeUsd: 1000 },
+            tool_response: result.content,
+          };
+          const gate = join(root, 'plugins/pre-trade-gate/scripts/gate.mjs');
+          const r = spawnSync(process.execPath, [gate, 'record'], {
+            input: JSON.stringify(hook), encoding: 'utf8', env: { PATH: process.env.PATH ?? '', CLAUDE_PLUGIN_DATA: dataDir },
+          });
+          if (r.status !== 0) say('FAIL', `gate.mjs record exited ${r.status}: ${r.stderr.trim()}`);
+          const dir = join(dataDir, 'checks', 'marketplace-canary');
+          let recs = [];
+          try { recs = readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8'))); } catch {}
+          const rec = recs.find((x) => ['GO', 'CAUTION', 'WAIT'].includes(x.decision));
+          if (!rec) say('FAIL', 'the gate recorded no decision');
+          say('PASS', `recorded ${rec.coin} ${rec.side} ${rec.decision}${rec.reason_codes.length ? ` (${rec.reason_codes.join(', ')})` : ''}`);
+          JS
+          OUT=$(node "$WORK/canary.mjs" "$WORK/rpc.json" "$WORK/data" "$ROOT" || echo "FAIL|the canary script itself failed")
+          echo "  + $OUT"
+          V="${OUT%%|*}"
+          case "$V" in PASS|SKIP|FAIL) ;; *) V=FAIL; OUT="FAIL|unexpected canary output: $OUT";; esac
+          verdict "$V" "${OUT#*|}"
+
       # OPS-MARKETPLACE-CANARY-REPAIR-W1: `if: always()` is the actual fix here, and it
       # matters more than the continue-on-error question everyone looks at first.
       # MEASURED across the last 10 runs: this step's conclusion was `skipped` EVERY time —

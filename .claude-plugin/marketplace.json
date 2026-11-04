@@ -21,6 +21,17 @@
       },
       "homepage": "https://algovault.com",
       "license": "MIT"
+    },
+    {
+      "name": "algovault-pre-trade-gate",
+      "source": "./plugins/pre-trade-gate",
+      "description": "Sharpen your agent's edge and protect capital. Validates rules, fees, funding, and live market regimes before routing to drive safer execution and higher long-term PnL. WAIT stops execution instantly. 100% keyless, zero-custody.",
+      "version": "0.1.0",
+      "author": {
+        "name": "AlgoVault Labs"
+      },
+      "homepage": "https://algovault.com/integrations/claude-code",
+      "license": "MIT"
     }
   ]
 }

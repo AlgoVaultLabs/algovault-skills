@@ -1,0 +1,38 @@
+{
+  "description": "AlgoVault pre-trade gate: keeps a record of each pre_trade_check, and blocks an opening perpetual or futures order with no recent non-WAIT check for its coin and side.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^mcp__.*__pre_trade_check$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/gate.mjs",
+              "record"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^mcp__(?!.*__(?:get_trade_call|get_trade_signal|get_market_regime|scan_funding_arb|scan_trade_calls|scan_market_regimes|pre_trade_check|chat_knowledge|search_knowledge|get_track_record)$)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/scripts/gate.mjs",
+              "gate"
+            ],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}

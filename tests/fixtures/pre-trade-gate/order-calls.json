@@ -1,0 +1,589 @@
+{
+  "_source": {
+    "okx": "okx/agent-trade-kit @ e5b60e4f0bc2afc75fab19c8360dafa6b84f3ed7 — packages/core/src/tools/contract-trade.ts (swap_place_order, futures_place_order), swap-trade.ts (swap_batch_orders, action place|cancel|amend), futures-trade.ts (futures_batch_orders, futures_amend_order), algo-trade.ts (swap_place_algo_order, swap_place_move_stop_order)",
+    "bybit": "bybit-exchange/trading-mcp @ e2bad249b860e0da16359a4d4db056a147d64796 — src/tools/trade/createOrder.ts, src/tools/trade/batchCreateOrders.ts",
+    "generic": "a Hyperliquid-style order tool taking {coin, side}",
+    "note": "Argument keys and enums are copied from the sources above; values are illustrative."
+  },
+  "gated": {
+    "okx_swap_place_long": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "buy",
+        "ordType": "market",
+        "sz": "1"
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ]
+      ]
+    },
+    "okx_swap_place_hedge_open_short": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "instId": "ETH-USDT-SWAP",
+        "tdMode": "isolated",
+        "side": "sell",
+        "posSide": "short",
+        "ordType": "limit",
+        "sz": "3",
+        "px": "2500"
+      },
+      "legs": [
+        [
+          "ETH",
+          "short"
+        ]
+      ]
+    },
+    "okx_futures_place_short": {
+      "tool_name": "mcp__okx__futures_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT-261225",
+        "tdMode": "cross",
+        "side": "sell",
+        "ordType": "limit",
+        "sz": "2",
+        "px": "95000"
+      },
+      "legs": [
+        [
+          "BTC",
+          "short"
+        ]
+      ]
+    },
+    "okx_swap_batch_place": {
+      "tool_name": "mcp__okx__swap_batch_orders",
+      "tool_input": {
+        "action": "place",
+        "orders": [
+          {
+            "instId": "BTC-USDT-SWAP",
+            "tdMode": "cross",
+            "side": "buy",
+            "ordType": "market",
+            "sz": "1"
+          },
+          {
+            "instId": "ETH-USDT-SWAP",
+            "tdMode": "cross",
+            "side": "sell",
+            "ordType": "market",
+            "sz": "3"
+          }
+        ]
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ],
+        [
+          "ETH",
+          "short"
+        ]
+      ]
+    },
+    "okx_futures_batch": {
+      "tool_name": "mcp__okx__futures_batch_orders",
+      "tool_input": {
+        "orders": [
+          {
+            "instId": "BTC-USDT-261225",
+            "tdMode": "cross",
+            "side": "buy",
+            "ordType": "market",
+            "sz": "1"
+          },
+          {
+            "instId": "ETH-USDT-261225",
+            "tdMode": "cross",
+            "side": "buy",
+            "ordType": "market",
+            "sz": "2"
+          }
+        ]
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ],
+        [
+          "ETH",
+          "long"
+        ]
+      ]
+    },
+    "okx_swap_algo_trigger": {
+      "tool_name": "mcp__okx__swap_place_algo_order",
+      "tool_input": {
+        "instId": "SOL-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "buy",
+        "ordType": "iceberg",
+        "sz": "10"
+      },
+      "legs": [
+        [
+          "SOL",
+          "long"
+        ]
+      ]
+    },
+    "bybit_linear_create_long": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Buy",
+        "orderType": "Market",
+        "qty": "0.01",
+        "confirm": true
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ]
+      ]
+    },
+    "bybit_linear_create_multiplier": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "1000PEPEUSDT",
+        "side": "Sell",
+        "orderType": "Market",
+        "qty": "100000",
+        "confirm": true
+      },
+      "legs": [
+        [
+          "PEPE",
+          "short"
+        ]
+      ]
+    },
+    "bybit_linear_hedge_open_short": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "ETHUSDT",
+        "side": "Sell",
+        "orderType": "Market",
+        "qty": "0.5",
+        "positionIdx": "2",
+        "confirm": true
+      },
+      "legs": [
+        [
+          "ETH",
+          "short"
+        ]
+      ]
+    },
+    "bybit_linear_batch": {
+      "tool_name": "mcp__bybit__batchCreateOrders",
+      "tool_input": {
+        "category": "linear",
+        "request": [
+          {
+            "symbol": "BTCUSDT",
+            "side": "Buy",
+            "orderType": "Market",
+            "qty": "0.01"
+          },
+          {
+            "symbol": "SOLUSDT",
+            "side": "Buy",
+            "orderType": "Limit",
+            "qty": "2",
+            "price": "150"
+          }
+        ],
+        "confirm": true
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ],
+        [
+          "SOL",
+          "long"
+        ]
+      ]
+    },
+    "generic_coin_side": {
+      "tool_name": "mcp__hyperliquid__place_order",
+      "tool_input": {
+        "coin": "BTC",
+        "side": "buy",
+        "size": 0.01,
+        "order_type": "market"
+      },
+      "legs": [
+        [
+          "BTC",
+          "long"
+        ]
+      ]
+    },
+    "generic_k_prefix": {
+      "tool_name": "mcp__hyperliquid__place_order",
+      "tool_input": {
+        "coin": "kPEPE",
+        "side": "sell",
+        "size": 1000
+      },
+      "legs": [
+        [
+          "PEPE",
+          "short"
+        ]
+      ]
+    }
+  },
+  "passes": {
+    "okx_reduce_only": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "sell",
+        "ordType": "market",
+        "sz": "1",
+        "reduceOnly": true
+      }
+    },
+    "okx_hedge_close": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "sell",
+        "posSide": "long",
+        "ordType": "market",
+        "sz": "1"
+      }
+    },
+    "okx_batch_cancel": {
+      "tool_name": "mcp__okx__swap_batch_orders",
+      "tool_input": {
+        "action": "cancel",
+        "orders": [
+          {
+            "instId": "BTC-USDT-SWAP",
+            "ordId": "590908157585625111"
+          }
+        ]
+      }
+    },
+    "okx_batch_amend": {
+      "tool_name": "mcp__okx__swap_batch_orders",
+      "tool_input": {
+        "action": "amend",
+        "orders": [
+          {
+            "instId": "BTC-USDT-SWAP",
+            "ordId": "590908157585625111",
+            "newSz": "2"
+          }
+        ]
+      }
+    },
+    "okx_batch_reduce_only_legs": {
+      "tool_name": "mcp__okx__futures_batch_orders",
+      "tool_input": {
+        "orders": [
+          {
+            "instId": "BTC-USDT-261225",
+            "tdMode": "cross",
+            "side": "sell",
+            "ordType": "market",
+            "sz": "1",
+            "reduceOnly": "true"
+          }
+        ]
+      }
+    },
+    "okx_cancel_order": {
+      "tool_name": "mcp__okx__swap_cancel_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "ordId": "590908157585625111"
+      }
+    },
+    "okx_amend_order": {
+      "tool_name": "mcp__okx__futures_amend_order",
+      "tool_input": {
+        "instId": "BTC-USDT-261225",
+        "ordId": "590908157585625111",
+        "newSz": "2"
+      }
+    },
+    "okx_close_position": {
+      "tool_name": "mcp__okx__swap_close_position",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "mgnMode": "cross"
+      }
+    },
+    "okx_spot": {
+      "tool_name": "mcp__okx__spot_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT",
+        "tdMode": "cash",
+        "side": "buy",
+        "ordType": "market",
+        "sz": "10"
+      }
+    },
+    "okx_option": {
+      "tool_name": "mcp__okx__option_place_order",
+      "tool_input": {
+        "instId": "BTC-USD-261225-100000-C",
+        "tdMode": "cross",
+        "side": "buy",
+        "ordType": "limit",
+        "sz": "1",
+        "px": "0.01"
+      }
+    },
+    "bybit_spot": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "spot",
+        "symbol": "BTCUSDT",
+        "side": "Buy",
+        "orderType": "Market",
+        "qty": "10",
+        "confirm": true
+      }
+    },
+    "bybit_option": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "option",
+        "symbol": "BTC-26DEC26-100000-C",
+        "side": "Buy",
+        "orderType": "Limit",
+        "qty": "0.1",
+        "price": "500",
+        "orderLinkId": "opt-1",
+        "confirm": true
+      }
+    },
+    "bybit_reduce_only": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Sell",
+        "orderType": "Market",
+        "qty": "0.01",
+        "reduceOnly": true,
+        "confirm": true
+      }
+    },
+    "bybit_close_on_trigger": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Sell",
+        "orderType": "Market",
+        "qty": "0.01",
+        "triggerPrice": "60000",
+        "triggerDirection": "2",
+        "closeOnTrigger": true,
+        "confirm": true
+      }
+    },
+    "bybit_hedge_close": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Sell",
+        "orderType": "Market",
+        "qty": "0.01",
+        "positionIdx": "1",
+        "confirm": true
+      }
+    },
+    "bybit_batch_spot": {
+      "tool_name": "mcp__bybit__batchCreateOrders",
+      "tool_input": {
+        "category": "spot",
+        "request": [
+          {
+            "symbol": "BTCUSDT",
+            "side": "Buy",
+            "orderType": "Market",
+            "qty": "10"
+          }
+        ],
+        "confirm": true
+      }
+    },
+    "bybit_cancel": {
+      "tool_name": "mcp__bybit__cancelOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "orderId": "1321003749386327552"
+      }
+    },
+    "bybit_amend": {
+      "tool_name": "mcp__bybit__amendOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "orderId": "1321003749386327552",
+        "qty": "0.02"
+      }
+    },
+    "bybit_pre_check": {
+      "tool_name": "mcp__bybit__preCheckOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Buy",
+        "orderType": "Market",
+        "qty": "0.01"
+      }
+    },
+    "generic_reduce_only": {
+      "tool_name": "mcp__hyperliquid__place_order",
+      "tool_input": {
+        "coin": "BTC",
+        "side": "sell",
+        "size": 0.01,
+        "reduce_only": true
+      }
+    },
+    "generic_spot": {
+      "tool_name": "mcp__hyperliquid__place_order",
+      "tool_input": {
+        "coin": "PURR",
+        "side": "buy",
+        "size": 10,
+        "market_type": "spot"
+      }
+    },
+    "generic_not_trading": {
+      "tool_name": "mcp__shop__place_order",
+      "tool_input": {
+        "items": [
+          {
+            "sku": "A-1",
+            "qty": 2
+          }
+        ],
+        "address": "1 Main St"
+      }
+    },
+    "unrelated_tool": {
+      "tool_name": "mcp__github__create_issue",
+      "tool_input": {
+        "title": "hello",
+        "body": "world"
+      }
+    },
+    "okx_algo_close_fraction": {
+      "tool_name": "mcp__okx__swap_place_algo_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "sell",
+        "posSide": "net",
+        "ordType": "conditional",
+        "closeFraction": "1",
+        "reduceOnly": true,
+        "slTriggerPx": "60000",
+        "slOrdPx": "-1"
+      }
+    }
+  },
+  "unreadable": {
+    "okx_no_inst": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "tdMode": "cross",
+        "side": "buy",
+        "ordType": "market",
+        "sz": "1"
+      }
+    },
+    "okx_bad_side": {
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": {
+        "instId": "BTC-USDT-SWAP",
+        "tdMode": "cross",
+        "side": "up",
+        "ordType": "market",
+        "sz": "1"
+      }
+    },
+    "okx_batch_no_action": {
+      "tool_name": "mcp__okx__swap_batch_orders",
+      "tool_input": {
+        "orders": [
+          {
+            "instId": "BTC-USDT-SWAP",
+            "tdMode": "cross",
+            "side": "buy",
+            "ordType": "market",
+            "sz": "1"
+          }
+        ]
+      }
+    },
+    "okx_batch_empty": {
+      "tool_name": "mcp__okx__futures_batch_orders",
+      "tool_input": {
+        "orders": []
+      }
+    },
+    "bybit_no_category": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "symbol": "BTCUSDT",
+        "side": "Buy",
+        "orderType": "Market",
+        "qty": "0.01",
+        "confirm": true
+      }
+    },
+    "bybit_bad_position_idx": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": {
+        "category": "linear",
+        "symbol": "BTCUSDT",
+        "side": "Buy",
+        "orderType": "Market",
+        "qty": "0.01",
+        "positionIdx": "7",
+        "confirm": true
+      }
+    },
+    "generic_side_without_coin": {
+      "tool_name": "mcp__hyperliquid__place_order",
+      "tool_input": {
+        "side": "buy",
+        "size": 0.01
+      }
+    },
+    "tool_input_not_object": {
+      "tool_name": "mcp__bybit__createOrder",
+      "tool_input": "category=linear&symbol=BTCUSDT"
+    }
+  }
+}

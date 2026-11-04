@@ -1,0 +1,45 @@
+{
+  "_source": "pre_trade_check result text, shaped like a live response (keys coin, side, size_usd, decision, reasons[].code, best_venue.exchange, as_of read 2026-11-04); values are illustrative. The refusal is the server's spent-allowance reply shape.",
+  "go": {
+    "coin": "BTC",
+    "side": "long",
+    "size_usd": 1000,
+    "hold_hours": 8,
+    "timeframe": "4h",
+    "decision": "GO",
+    "reasons": [],
+    "best_venue": { "exchange": "BINANCE", "est_cost_bps": 11, "est_cost_usd": 1.1, "capacity_usd": 12000000 },
+    "rule_version": 2,
+    "as_of": "2026-11-04T06:27:36.625Z"
+  },
+  "caution": {
+    "coin": "BTC",
+    "side": "long",
+    "size_usd": 1000,
+    "decision": "CAUTION",
+    "reasons": [
+      { "code": "REGIME_AGAINST_SIDE", "severity": "adjust", "detail": "The 4h market regime is TRENDING_DOWN, against a long." }
+    ],
+    "best_venue": { "exchange": "BYBIT", "est_cost_bps": 12, "est_cost_usd": 1.2, "capacity_usd": 9000000 },
+    "as_of": "2026-11-04T06:27:36.625Z"
+  },
+  "wait": {
+    "coin": "BTC",
+    "side": "long",
+    "size_usd": 5000000,
+    "decision": "WAIT",
+    "reasons": [
+      { "code": "SIZE_ABOVE_VENUE_LIMIT", "severity": "block", "detail": "The size is above every venue's limit." },
+      { "code": "FUNDING_COST_HIGH", "severity": "block", "detail": "Funding over the hold costs more than the limit." }
+    ],
+    "best_venue": { "exchange": "OKX", "est_cost_bps": 30, "est_cost_usd": 15000, "capacity_usd": 2000000 },
+    "as_of": "2026-11-04T06:27:36.625Z"
+  },
+  "refusal": {
+    "code": "TIER_LIMIT_REACHED",
+    "error_code": "TIER_LIMIT_REACHED",
+    "message": "Free monthly quota used: 20/20.",
+    "usage_display": "20/20",
+    "resets_at": "2026-12-01T00:00:00.000Z"
+  }
+}

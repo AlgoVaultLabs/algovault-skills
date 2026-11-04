@@ -1,0 +1,34 @@
+{
+  "name": "algovault-pre-trade-gate",
+  "displayName": "AlgoVault pre-trade gate",
+  "version": "0.1.0",
+  "description": "Sharpen your agent's edge and protect capital. Validates rules, fees, funding, and live market regimes before routing to drive safer execution and higher long-term PnL. WAIT stops execution instantly. 100% keyless, zero-custody.",
+  "author": {
+    "name": "AlgoVault Labs"
+  },
+  "homepage": "https://algovault.com/integrations/claude-code",
+  "license": "MIT",
+  "userConfig": {
+    "max_age_minutes": {
+      "type": "number",
+      "title": "Check freshness (minutes)",
+      "description": "How recent a pre_trade_check must be for an order on the same coin and side to pass.",
+      "default": 15,
+      "min": 1,
+      "max": 240
+    },
+    "on_wait": {
+      "type": "string",
+      "title": "When the check returns WAIT",
+      "description": "deny blocks the order. ask lets a person approve it.",
+      "options": ["deny", "ask"],
+      "default": "deny"
+    },
+    "order_tools": {
+      "type": "string",
+      "title": "Order tools (regular expression)",
+      "description": "A JavaScript regular expression over the full tool name, such as mcp__hyperliquid__(place_order|market_open). It replaces the built-in order-tool list. Leave empty to use the built-in list.",
+      "default": ""
+    }
+  }
+}

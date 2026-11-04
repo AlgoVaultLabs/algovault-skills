@@ -3,9 +3,11 @@ langchain-mcp-adapters==0.2.2
 langchain-core>=1.0.0,<2.0.0
 mcp>=1.9.2
 
+# pre_trade_gate.py — the AgentMiddleware API (verified on langchain 1.4.8, 2026-11-04);
+# langchain 1.x brings a matching langgraph.
+langchain>=1,<2
+
 # Optional — only needed if you wire the demo to a chat model in the
 # follow-on agent snippet from docs/integrations/langchain.md. The bare
 # `python demo.py BTC 4h` call below does NOT need an LLM API key.
-# langchain==0.3.27
-# langgraph==0.6.10
-# langchain-anthropic==0.3.21
+# langchain-anthropic>=1,<2

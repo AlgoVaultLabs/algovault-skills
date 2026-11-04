@@ -137,6 +137,34 @@ async def run():
 
 Requires `pip install langchain langgraph langchain-anthropic` and an `ANTHROPIC_API_KEY`. Swap the model string for any LangChain chat-model identifier.
 
+## Gate your orders
+
+`pre_trade_check` reads one planned perp order (coin, side, size, hold time) and answers `GO`, `CAUTION` or `WAIT`, with reason codes and the cheapest venue. [`examples/langchain/pre_trade_gate.py`](https://github.com/AlgoVaultLabs/algovault-skills/blob/main/examples/langchain/pre_trade_gate.py) makes it a step your agent cannot skip: a middleware runs the check before your order tool, on the order's own size.
+
+```python
+from langchain.agents import create_agent
+from pre_trade_gate import PreTradeGate
+
+def place_order_check(args):
+    if args.get("reduce_only"):
+        return None  # a close opens nothing: not checked
+    return {"coin": args["coin"], "side": args["side"], "sizeUsd": args["size_usd"]}
+
+# model: any chat model with tool calling; place_order: your exchange's order tool
+agent = create_agent(
+    model,
+    [place_order, *tools],
+    middleware=[PreTradeGate({"place_order": place_order_check})],
+)
+```
+
+- `WAIT` returns an error `ToolMessage` naming the reason codes, and `place_order` is never called.
+- A check that cannot run (a transport error, a refusal, a reply with no decision) blocks the order the same way, as does an error in your mapping function.
+- `GO` and `CAUTION` run the order tool once; its reply gains a line naming the decision, the reason codes, the checked size and the cheapest venue.
+- Tools outside the map run unchecked, AlgoVault's own included.
+
+The middleware calls the check through [`examples/_shared/algovault_pre_trade.py`](https://github.com/AlgoVaultLabs/algovault-skills/blob/main/examples/_shared/algovault_pre_trade.py) (standard library only), which sends `ALGOVAULT_API_KEY` as a Bearer key when it is set. `pre_trade_gate.py` needs `langchain>=1,<2`, pinned in `examples/langchain/requirements.txt`.
+
 ## Why AlgoVault?
 
 - **Composite verdict, not raw indicators.** One JSON response replaces 26-indicator vote-counting.

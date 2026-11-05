@@ -8,8 +8,8 @@
  * Sources of the built-in rows (tool names and argument keys):
  *   OKX   okx/agent-trade-kit packages/core/src/tools/{contract-trade,swap-trade,futures-trade,algo-trade}.ts
  *         instId, side ("buy=long, sell=short"), posSide, sz, reduceOnly; swap_batch_orders action;
- *         algo orders (trigger, chase, iceberg, twap, trailing) can open a position too, and
- *         closeFraction marks a full close
+ *         algo orders (trigger, chase, iceberg, twap, trailing) can open a position too, on swaps
+ *         and on futures (registerFuturesAlgoTools), and closeFraction marks a full close
  *   Bybit bybit-exchange/trading-mcp src/tools/trade/{createOrder,batchCreateOrders}.ts
  *         category, symbol, side Buy|Sell, qty, reduceOnly, closeOnTrigger, positionIdx
  *
@@ -48,6 +48,8 @@ export const ORDER_TOOLS = new Map([
   ['futures_batch_orders', { reader: 'okx', shape: 'batch' }],
   ['swap_place_algo_order', { reader: 'okx', shape: 'single' }],
   ['swap_place_move_stop_order', { reader: 'okx', shape: 'single' }],
+  ['futures_place_algo_order', { reader: 'okx', shape: 'single' }],
+  ['futures_place_move_stop_order', { reader: 'okx', shape: 'single' }],
   ['createOrder', { reader: 'bybit', shape: 'single' }],
   ['batchCreateOrders', { reader: 'bybit', shape: 'batch' }],
   // A generic {coin, side} order tool, as Hyperliquid-style servers name it.
@@ -60,14 +62,84 @@ export class OrderReadError extends Error {}
 
 const unreadable = (what) => new OrderReadError(`could not read ${what}`);
 
-/** The tool's own name: what follows the last `__` of `mcp__<server>__<tool>`. */
-export function toolSegment(toolName) {
-  const m = /^mcp__.+__(.+)$/.exec(toolName);
-  return m ? m[1] : toolName;
+/**
+ * Tools from the same sources whose names end in an order tool's name but which place no
+ * perpetual or futures order (OKX spot-trade.ts and option-trade.ts). They are known so
+ * that a single-underscore name such as `mcp_okx_spot_place_order` is not read as
+ * `place_order`.
+ */
+export const KNOWN_OTHER_TOOLS = Object.freeze(['spot_place_order', 'option_place_order']);
+
+/** Every tool name the gate knows, longest first. The single-underscore style is read against it. */
+const KNOWN_TOOLS = [...new Set([...ALGOVAULT_TOOLS, ...ORDER_TOOLS.keys(), ...KNOWN_OTHER_TOOLS])].sort(
+  (a, b) => b.length - a.length,
+);
+
+/**
+ * One tool name, in any of the three styles a harness uses, read into {tool, server, full}:
+ *   `mcp__<server>__<tool>`               Claude Code, Codex, Devin
+ *   a bare `<tool>`, its server named      Cursor (`mcp_server_name`)
+ *   `mcp_<server>_<tool>`                 Gemini CLI. Both parts may hold `_`, so the name
+ *                                         is read against the known tool names, longest first.
+ * `full` is the `mcp__<server>__<tool>` form that the `order_tools` option is written
+ * against. A name in none of the styles is its own `tool` and `full`.
+ * @returns {{tool: string, server: string|null, full: string} | null} null for no name
+ */
+export function parseToolName(toolName, serverName) {
+  if (typeof toolName !== 'string' || toolName === '') return null;
+  const double = /^mcp__(.+)__(.+)$/.exec(toolName);
+  if (double) return { tool: double[2], server: double[1], full: toolName };
+  const server = typeof serverName === 'string' && serverName.trim() !== '' ? serverName.trim() : null;
+  if (server) return { tool: toolName, server, full: `mcp__${server}__${toolName}` };
+  if (toolName.startsWith('mcp_')) {
+    for (const known of KNOWN_TOOLS) {
+      const tail = `_${known}`;
+      if (toolName.length > 'mcp_'.length + tail.length && toolName.endsWith(tail)) {
+        const s = toolName.slice('mcp_'.length, -tail.length);
+        return { tool: known, server: s, full: `mcp__${s}__${known}` };
+      }
+    }
+  }
+  return { tool: toolName, server: null, full: toolName };
 }
 
-export function isAlgoVaultTool(toolName) {
-  return typeof toolName === 'string' && ALGOVAULT_TOOLS.includes(toolSegment(toolName));
+/** The tool's own name, in any of the three styles. */
+export function toolSegment(toolName, serverName) {
+  const p = parseToolName(toolName, serverName);
+  return p ? p.tool : toolName;
+}
+
+export function isAlgoVaultTool(toolName, serverName) {
+  const p = parseToolName(toolName, serverName);
+  return p !== null && ALGOVAULT_TOOLS.includes(p.tool);
+}
+
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const STYLE_PARTS = Object.freeze({
+  mcp__: ['^mcp__.+__', '$'],
+  mcp_: ['^mcp_.+_', '$'],
+});
+
+function styleMatcher(style, names) {
+  const parts = STYLE_PARTS[style];
+  if (!parts) throw new Error(`no matcher style ${style}`);
+  return `${parts[0]}(?:${names.map(escapeRegExp).join('|')})${parts[1]}`;
+}
+
+/**
+ * The gate matcher for a harness where a crashed hook lets the call through: the built-in
+ * order tools and nothing else, written without lookahead (the harness's regex flavour may
+ * have none). No AlgoVault tool is an order tool, so a gate that fails there can never
+ * stand between the agent and its check. style is 'mcp__' or 'mcp_'.
+ */
+export function orderToolMatcher(style) {
+  return styleMatcher(style, [...ORDER_TOOLS.keys()]);
+}
+
+/** The record matcher: pre_trade_check on any server. */
+export function checkToolMatcher(style) {
+  return styleMatcher(style, ['pre_trade_check']);
 }
 
 function asOrderObject(o, where) {
@@ -195,17 +267,19 @@ function readGeneric(input, declared) {
 
 /**
  * Classify one tool call.
- * @param {string} toolName  the harness's tool name, e.g. `mcp__okx__swap_place_order`
+ * @param {string} toolName  the harness's tool name, in any of the three styles (parseToolName)
  * @param {object} toolInput the call's arguments
- * @param {{orderTools?: RegExp|null}} options `order_tools`, compiled; null keeps the built-in list
+ * @param {{orderTools?: RegExp|null, serverName?: string|null}} options `order_tools`, compiled
+ *   (null keeps the built-in list); the server, for a harness that names it apart from the tool
  * @returns {{pass: string} | {legs: Array<{coin: string, side: 'long'|'short'}>}}
  * @throws {OrderReadError} an order tool whose input cannot be read
  */
-export function classifyToolCall(toolName, toolInput, { orderTools = null } = {}) {
-  if (typeof toolName !== 'string' || toolName === '') throw unreadable('the tool name');
-  if (isAlgoVaultTool(toolName)) return { pass: 'an AlgoVault tool' };
-  const row = ORDER_TOOLS.get(toolSegment(toolName));
-  const isOrderTool = orderTools ? orderTools.test(toolName) : Boolean(row);
+export function classifyToolCall(toolName, toolInput, { orderTools = null, serverName = null } = {}) {
+  const name = parseToolName(toolName, serverName);
+  if (!name) throw unreadable('the tool name');
+  if (ALGOVAULT_TOOLS.includes(name.tool)) return { pass: 'an AlgoVault tool' };
+  const row = ORDER_TOOLS.get(name.tool);
+  const isOrderTool = orderTools ? orderTools.test(name.full) || orderTools.test(toolName) : Boolean(row);
   if (!isOrderTool) return { pass: 'not an order tool' };
   const input = asOrderObject(toolInput, 'the tool input');
 

@@ -24,7 +24,9 @@ export function sanitizeId(raw, what) {
 }
 
 function checksDir(dataDir) {
-  if (typeof dataDir !== 'string' || dataDir === '') throw new StoreError('CLAUDE_PLUGIN_DATA is not set');
+  if (typeof dataDir !== 'string' || dataDir === '') {
+    throw new StoreError('no data directory: CLAUDE_PLUGIN_DATA is not set, nor PLUGIN_DATA, and no --data-dir was given');
+  }
   return resolve(dataDir, 'checks');
 }
 

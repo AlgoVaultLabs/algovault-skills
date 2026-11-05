@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "algovault-pre-trade-gate",
+  "version": "0.1.0",
+  "description": "Sharpen your agent's edge and protect capital. Validates rules, fees, funding, and live market regimes before routing to drive safer execution and higher long-term PnL. WAIT stops execution instantly. 100% keyless, zero-custody.",
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/codex.json"
+    }
+  }
+}

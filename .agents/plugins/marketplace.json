@@ -1,0 +1,32 @@
+{
+  "name": "algovault-skills",
+  "interface": {
+    "displayName": "AlgoVault Labs"
+  },
+  "plugins": [
+    {
+      "name": "algovault-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/AlgoVaultLabs/algovault-skills.git"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "algovault-pre-trade-gate",
+      "source": {
+        "source": "local",
+        "path": "./plugins/pre-trade-gate"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -4,18 +4,29 @@
  *   evaluate({event, tool_name, tool_input, tool_response, session_id, tool_use_id}, ctx)
  *     -> {decision: 'allow'|'deny'|'ask', reason, context}
  *
- * Input keys may be snake_case or camelCase. `event` is 'record' (after a tool ran) or
- * 'gate' (before a tool runs); hook event names map onto them. A harness adapter only
- * maps its own JSON in and out: every deny must also exit 2 with the reason on stderr.
+ * Input keys may be snake_case or camelCase, in any harness's spelling (harnesses.mjs):
+ * the session key may be `session_id` or Cursor's `conversation_id`; the tool name may be
+ * `mcp__<server>__<tool>`, a bare name with `mcp_server_name`, or `mcp_<server>_<tool>`;
+ * `tool_input` may be a JSON string; the check's result may come in any wrapping
+ * (check-response.mjs). `event` is 'record' (after a tool ran) or 'gate' (before a tool
+ * runs); each harness's hook event names map onto them. A harness adapter only maps its
+ * own JSON in and out: every deny must also exit 2 with the reason on stderr.
+ *
+ * ctx: {dataDir, env, now, harness}. The adapter resolves the data dir. Options come from
+ * CLAUDE_PLUGIN_OPTION_<KEY>, else from `options.json` in the data dir (the installer
+ * writes it for a harness without plugin options), else their defaults.
  *
  * record: keeps one record per pre_trade_check result; a refusal keeps nothing.
  * gate:   an opening perpetual or futures order passes only when this session holds a
  *         fresh, non-WAIT record for each {coin, side} it opens. No record, a WAIT, or
  *         anything unreadable blocks it. The gate never calls AlgoVault and holds no key.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { classifyToolCall, isAlgoVaultTool, toolSegment, OrderReadError } from './order-tools.mjs';
 import { parseCheckResponse, buildRecord } from './check-response.mjs';
 import { writeRecord, readRecords, pruneRecords } from './store.mjs';
+import { EVENT_KINDS } from './harnesses.mjs';
 
 export const PREFIX = 'pre-trade gate: ';
 
@@ -35,41 +46,99 @@ export class GateError extends Error {}
 const EVENTS = new Map([
   ['record', 'record'],
   ['gate', 'gate'],
-  ['PostToolUse', 'record'],
-  ['PreToolUse', 'gate'],
+  ...Object.entries(EVENT_KINDS),
 ]);
+
+/** Session keys, in the order they are tried after the harness's own. */
+const SESSION_KEYS = Object.freeze(['session_id', 'sessionId', 'conversation_id', 'conversationId']);
 
 function pick(input, snake, camel) {
   return input[snake] !== undefined ? input[snake] : input[camel];
 }
 
-/** Snake or camel case in; one shape out. */
-export function normalizeInput(raw) {
+const present = (v) => v !== undefined && v !== null && v !== '';
+
+/** A tool input sent as a JSON string (Cursor) is read as its object; anything else is kept as given. */
+function inputObject(v) {
+  if (typeof v !== 'string') return v;
+  try {
+    const o = JSON.parse(v);
+    return o && typeof o === 'object' ? o : v;
+  } catch {
+    return v;
+  }
+}
+
+/** Any harness's spelling in; one shape out. `harness` is its row in harnesses.mjs, when known. */
+export function normalizeInput(raw, harness = null) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new GateError('could not read the hook input');
+  const keys = harness && harness.sessionKey ? [harness.sessionKey, ...SESSION_KEYS] : SESSION_KEYS;
+  const sessionKey = keys.find((k) => present(raw[k]));
   return {
     event: raw.event ?? pick(raw, 'hook_event_name', 'hookEventName'),
     toolName: pick(raw, 'tool_name', 'toolName'),
-    toolInput: pick(raw, 'tool_input', 'toolInput'),
-    toolResponse: pick(raw, 'tool_response', 'toolResponse'),
-    sessionId: pick(raw, 'session_id', 'sessionId'),
+    serverName: pick(raw, 'mcp_server_name', 'mcpServerName'),
+    toolInput: inputObject(pick(raw, 'tool_input', 'toolInput')),
+    toolResponse: pick(raw, 'tool_response', 'toolResponse') ?? raw.result_json,
+    sessionId: sessionKey ? raw[sessionKey] : pick(raw, 'session_id', 'sessionId'),
     toolUseId: pick(raw, 'tool_use_id', 'toolUseId'),
   };
 }
 
 /*
- * The three options, from the harness's environment (Claude Code exports each as
- * CLAUDE_PLUGIN_OPTION_<KEY>). An unset option takes its default; a set but unusable
- * one is an error, never a silent default. order_tools is read for every call it might
+ * The three options. Claude Code exports each as CLAUDE_PLUGIN_OPTION_<KEY>; a harness
+ * without plugin options reads `options.json` in the data dir, which the installer writes.
+ * The environment wins per key. An unset option takes its default; a set but unusable one
+ * is an error, never a silent default. order_tools is read for every call it might
  * classify; the other two only once an order is gated, so a bad value blocks orders and
- * nothing else.
+ * nothing else. None is read for an AlgoVault tool.
  */
-const optionValue = (env, key) => {
-  const v = env?.[`CLAUDE_PLUGIN_OPTION_${key}`];
-  return v === undefined || v === null ? '' : String(v).trim();
+export const OPTION_KEYS = Object.freeze(['max_age_minutes', 'on_wait', 'order_tools']);
+export const OPTIONS_FILE = 'options.json';
+
+const envKey = (key) => `CLAUDE_PLUGIN_OPTION_${key.toUpperCase()}`;
+
+/** `options.json` in the data dir: {} when there is none; an error when it cannot be used. */
+export function readOptionsFile(dataDir) {
+  if (typeof dataDir !== 'string' || dataDir === '') return {};
+  const file = join(dataDir, OPTIONS_FILE);
+  let raw;
+  try {
+    raw = readFileSync(file, 'utf8');
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return {};
+    throw new GateError(`could not read the options file ${file}`);
+  }
+  let o;
+  try {
+    o = JSON.parse(raw);
+  } catch {
+    throw new GateError(`the options file ${file} is not valid JSON`);
+  }
+  if (!o || typeof o !== 'object' || Array.isArray(o)) throw new GateError(`the options file ${file} is not a JSON object`);
+  for (const k of OPTION_KEYS) {
+    const v = o[k];
+    if (v !== undefined && v !== null && typeof v !== 'string' && typeof v !== 'number') {
+      throw new GateError(`the ${k} option in ${file} must be a string or a number`);
+    }
+  }
+  return o;
+}
+
+/** The options file, read only when the environment leaves an option unset. */
+export function readFileOptions(env, dataDir) {
+  return OPTION_KEYS.every((k) => env?.[envKey(k)] !== undefined && env?.[envKey(k)] !== null) ? {} : readOptionsFile(dataDir);
+}
+
+const optionValue = (env, fileOptions, key) => {
+  const v = env?.[envKey(key)];
+  if (v !== undefined && v !== null) return String(v).trim();
+  const f = fileOptions?.[key];
+  return f === undefined || f === null ? '' : String(f).trim();
 };
 
-export function readOrderTools(env) {
-  const tools = optionValue(env, 'ORDER_TOOLS');
+export function readOrderTools(env, fileOptions = {}) {
+  const tools = optionValue(env, fileOptions, 'order_tools');
   if (tools === '') return null;
   try {
     return new RegExp(tools);
@@ -78,16 +147,16 @@ export function readOrderTools(env) {
   }
 }
 
-export function readMaxAgeMinutes(env) {
-  const age = optionValue(env, 'MAX_AGE_MINUTES');
+export function readMaxAgeMinutes(env, fileOptions = {}) {
+  const age = optionValue(env, fileOptions, 'max_age_minutes');
   if (age === '') return DEFAULTS.maxAgeMinutes;
   const n = /^\d+(\.\d+)?$/.test(age) ? Number(age) : NaN;
   if (!(n >= 1 && n <= 240)) throw new GateError(`the max_age_minutes option must be a number from 1 to 240, not "${age}"`);
   return n;
 }
 
-export function readOnWait(env) {
-  const wait = optionValue(env, 'ON_WAIT').toLowerCase();
+export function readOnWait(env, fileOptions = {}) {
+  const wait = optionValue(env, fileOptions, 'on_wait').toLowerCase();
   if (wait === '') return DEFAULTS.onWait;
   if (wait !== 'deny' && wait !== 'ask') throw new GateError(`the on_wait option must be deny or ask, not "${wait}"`);
   return wait;
@@ -120,10 +189,14 @@ function describePass(leg, r, now) {
 
 function gate(input, { dataDir, env, now }) {
   // Never an AlgoVault tool, whatever the options say: a broken setting must not block the check itself.
-  if (isAlgoVaultTool(input.toolName)) return { decision: 'allow', reason: 'an AlgoVault tool', context: null };
+  if (isAlgoVaultTool(input.toolName, input.serverName)) return { decision: 'allow', reason: 'an AlgoVault tool', context: null };
+  const fileOptions = readFileOptions(env, dataDir);
   let classified;
   try {
-    classified = classifyToolCall(input.toolName, input.toolInput, { orderTools: readOrderTools(env) });
+    classified = classifyToolCall(input.toolName, input.toolInput, {
+      orderTools: readOrderTools(env, fileOptions),
+      serverName: input.serverName,
+    });
   } catch (err) {
     if (err instanceof OrderReadError) {
       return { decision: 'deny', reason: `${PREFIX}${err.message}, so the order is blocked.`, context: null };
@@ -132,8 +205,8 @@ function gate(input, { dataDir, env, now }) {
   }
   if (!classified.legs) return { decision: 'allow', reason: classified.pass, context: null };
 
-  const maxAgeMs = readMaxAgeMinutes(env) * 60_000;
-  const onWait = readOnWait(env);
+  const maxAgeMs = readMaxAgeMinutes(env, fileOptions) * 60_000;
+  const onWait = readOnWait(env, fileOptions);
   const records = readRecords(dataDir, input.sessionId);
   const missing = [];
   const waits = [];
@@ -152,7 +225,7 @@ function gate(input, { dataDir, env, now }) {
 }
 
 function record(input, { dataDir, now }) {
-  if (toolSegment(String(input.toolName ?? '')) !== 'pre_trade_check') {
+  if (toolSegment(String(input.toolName ?? ''), input.serverName) !== 'pre_trade_check') {
     return { decision: 'allow', reason: 'not a pre_trade_check', context: null };
   }
   const parsed = parseCheckResponse(input.toolResponse);
@@ -165,11 +238,11 @@ function record(input, { dataDir, now }) {
 }
 
 /**
- * @param {object} rawInput the hook input (snake or camel case), with `event`
- * @param {{dataDir: string, env: object, now: number}} ctx
+ * @param {object} rawInput the hook input (any harness's spelling), with `event`
+ * @param {{dataDir: string, env: object, now: number, harness?: object}} ctx `harness` is its row in harnesses.mjs
  */
 export function evaluate(rawInput, ctx) {
-  const input = normalizeInput(rawInput);
+  const input = normalizeInput(rawInput, ctx.harness);
   const kind = EVENTS.get(input.event);
   if (kind === 'gate') return gate(input, ctx);
   if (kind === 'record') return record(input, ctx);

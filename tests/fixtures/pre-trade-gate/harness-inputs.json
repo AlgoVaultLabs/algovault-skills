@@ -1,0 +1,101 @@
+{
+  "_source": "Hook inputs as each harness documents them: pre-trade-gate contract § Harnesses (read 2026-11-04), plus the Codex, Cursor, Gemini CLI and Devin hook pages re-read 2026-11-05 for the fields the contract leaves out. Keys and nesting follow the docs; values are illustrative. __CHECK__ stands for a pre_trade_check result text (check-results.json) and __CHECK_RESULT__ for Cursor's result_json, the MCP result as a JSON string. Codex's PostToolUse tool_response is documented only as 'the MCP call result'; it is shown here as an MCP CallToolResult.",
+  "codex": {
+    "gate": {
+      "session_id": "codex-session-1",
+      "transcript_path": null,
+      "cwd": "/work/project",
+      "hook_event_name": "PreToolUse",
+      "model": "gpt-model",
+      "turn_id": "turn-1",
+      "permission_mode": "default",
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_use_id": "call_gate_1",
+      "tool_input": { "instId": "BTC-USDT-SWAP", "tdMode": "cross", "side": "buy", "ordType": "market", "sz": "1" }
+    },
+    "record": {
+      "session_id": "codex-session-1",
+      "transcript_path": null,
+      "cwd": "/work/project",
+      "hook_event_name": "PostToolUse",
+      "model": "gpt-model",
+      "turn_id": "turn-1",
+      "tool_name": "mcp__algovault__pre_trade_check",
+      "tool_use_id": "call_check_1",
+      "tool_input": { "coin": "BTC", "side": "long", "sizeUsd": 1000 },
+      "tool_response": { "content": [{ "type": "text", "text": "__CHECK__" }], "isError": false }
+    }
+  },
+  "cursor": {
+    "gate": {
+      "conversation_id": "cursor-conversation-1",
+      "generation_id": "generation-1",
+      "model": "cursor-model",
+      "hook_event_name": "beforeMCPExecution",
+      "cursor_version": "3.0.0",
+      "workspace_roots": ["/work/project"],
+      "user_email": null,
+      "transcript_path": null,
+      "tool_name": "swap_place_order",
+      "tool_input": "{\"instId\":\"BTC-USDT-SWAP\",\"tdMode\":\"cross\",\"side\":\"buy\",\"ordType\":\"market\",\"sz\":\"1\"}",
+      "mcp_server_name": "okx",
+      "command": "node okx-trade-mcp"
+    },
+    "record": {
+      "conversation_id": "cursor-conversation-1",
+      "generation_id": "generation-1",
+      "model": "cursor-model",
+      "hook_event_name": "afterMCPExecution",
+      "cursor_version": "3.0.0",
+      "workspace_roots": ["/work/project"],
+      "user_email": null,
+      "transcript_path": null,
+      "tool_name": "pre_trade_check",
+      "tool_input": "{\"coin\":\"BTC\",\"side\":\"long\",\"sizeUsd\":1000}",
+      "mcp_server_name": "algovault",
+      "mcp_server_url": "https://api.algovault.com/mcp",
+      "result_json": "__CHECK_RESULT__",
+      "duration": 412
+    }
+  },
+  "gemini": {
+    "gate": {
+      "session_id": "gemini-session-1",
+      "transcript_path": "/home/user/.gemini/tmp/chats/session-1.json",
+      "cwd": "/work/project",
+      "hook_event_name": "BeforeTool",
+      "timestamp": "2026-11-05T08:00:00.000Z",
+      "tool_name": "mcp_okx_swap_place_order",
+      "tool_input": { "instId": "BTC-USDT-SWAP", "tdMode": "cross", "side": "buy", "ordType": "market", "sz": "1" },
+      "mcp_context": {},
+      "original_request_name": "mcp_okx_swap_place_order"
+    },
+    "record": {
+      "session_id": "gemini-session-1",
+      "transcript_path": "/home/user/.gemini/tmp/chats/session-1.json",
+      "cwd": "/work/project",
+      "hook_event_name": "AfterTool",
+      "timestamp": "2026-11-05T08:00:01.000Z",
+      "tool_name": "mcp_algovault_pre_trade_check",
+      "tool_input": { "coin": "BTC", "side": "long", "sizeUsd": 1000 },
+      "tool_response": { "llmContent": [{ "text": "__CHECK__" }], "returnDisplay": "pre_trade_check result" }
+    }
+  },
+  "devin": {
+    "gate": {
+      "hook_event_name": "PreToolUse",
+      "tool_name": "mcp__okx__swap_place_order",
+      "tool_input": { "instId": "BTC-USDT-SWAP", "tdMode": "cross", "side": "buy", "ordType": "market", "sz": "1" },
+      "session_id": "devin-session-1",
+      "prompt_id": "prompt-1"
+    },
+    "record": {
+      "hook_event_name": "PostToolUse",
+      "tool_name": "mcp__algovault__pre_trade_check",
+      "tool_input": { "coin": "BTC", "side": "long", "sizeUsd": 1000 },
+      "tool_response": { "success": true, "output": "__CHECK__", "error": null },
+      "session_id": "devin-session-1",
+      "prompt_id": "prompt-2"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "description": "AlgoVault pre-trade gate: keeps a record of each pre_trade_check, and blocks an opening perpetual or futures order with no recent non-WAIT check for its coin and side.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^mcp__.+__(?:pre_trade_check)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/codex.mjs\" record",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^mcp__.+__(?:swap_place_order|futures_place_order|swap_batch_orders|futures_batch_orders|swap_place_algo_order|swap_place_move_stop_order|futures_place_algo_order|futures_place_move_stop_order|createOrder|batchCreateOrders|place_order|create_order|open_position)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/codex.mjs\" gate",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -38,7 +38,8 @@ so connect the AlgoVault MCP server as usual.
 
 - **Gated:** an opening order on a perpetual or futures contract. OKX `swap_place_order`,
   `futures_place_order`, `swap_batch_orders` (place), `futures_batch_orders`,
-  `swap_place_algo_order` and `swap_place_move_stop_order`; Bybit `createOrder` and
+  `swap_place_algo_order`, `swap_place_move_stop_order`, `futures_place_algo_order` and
+  `futures_place_move_stop_order`; Bybit `createOrder` and
   `batchCreateOrders` (linear and inverse); and a `place_order`, `create_order` or
   `open_position` tool whose input names a coin and a side. Each leg of a batch needs its own check.
 - **Passes:** a check from this session for the same coin and side, at most 15 minutes old,

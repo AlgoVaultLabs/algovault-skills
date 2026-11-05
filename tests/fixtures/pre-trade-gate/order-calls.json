@@ -1,6 +1,6 @@
 {
   "_source": {
-    "okx": "okx/agent-trade-kit @ e5b60e4f0bc2afc75fab19c8360dafa6b84f3ed7 — packages/core/src/tools/contract-trade.ts (swap_place_order, futures_place_order), swap-trade.ts (swap_batch_orders, action place|cancel|amend), futures-trade.ts (futures_batch_orders, futures_amend_order), algo-trade.ts (swap_place_algo_order, swap_place_move_stop_order)",
+    "okx": "okx/agent-trade-kit @ e5b60e4f0bc2afc75fab19c8360dafa6b84f3ed7 — packages/core/src/tools/contract-trade.ts (swap_place_order, futures_place_order), swap-trade.ts (swap_batch_orders, action place|cancel|amend), futures-trade.ts (futures_batch_orders, futures_amend_order), algo-trade.ts (swap_place_algo_order, swap_place_move_stop_order, futures_place_algo_order, futures_place_move_stop_order)",
     "bybit": "bybit-exchange/trading-mcp @ e2bad249b860e0da16359a4d4db056a147d64796 — src/tools/trade/createOrder.ts, src/tools/trade/batchCreateOrders.ts",
     "generic": "a Hyperliquid-style order tool taking {coin, side}",
     "note": "Argument keys and enums are copied from the sources above; values are illustrative."
@@ -132,6 +132,41 @@
       "legs": [
         [
           "SOL",
+          "long"
+        ]
+      ]
+    },
+    "okx_futures_algo_trigger": {
+      "tool_name": "mcp__okx__futures_place_algo_order",
+      "tool_input": {
+        "instId": "ETH-USD-261225",
+        "tdMode": "cross",
+        "side": "sell",
+        "posSide": "short",
+        "ordType": "trigger",
+        "sz": "3",
+        "triggerPx": "3100",
+        "orderPx": "-1"
+      },
+      "legs": [
+        [
+          "ETH",
+          "short"
+        ]
+      ]
+    },
+    "okx_futures_move_stop": {
+      "tool_name": "mcp__okx__futures_place_move_stop_order",
+      "tool_input": {
+        "instId": "BTC-USD-261225",
+        "tdMode": "cross",
+        "side": "buy",
+        "sz": "2",
+        "callbackRatio": "0.01"
+      },
+      "legs": [
+        [
+          "BTC",
           "long"
         ]
       ]

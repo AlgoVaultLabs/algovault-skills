@@ -125,7 +125,7 @@ const recordFiles = (data, session) => {
 };
 
 describe('the harness table', () => {
-  const FIELDS = ['id', 'name', 'adapter', 'events', 'nameStyle', 'sessionKey', 'deny', 'ask', 'failClosed', 'matcher', 'install', 'proven'];
+  const FIELDS = ['id', 'name', 'adapter', 'events', 'nameStyle', 'sessionKey', 'deny', 'ask', 'failClosed', 'matcher', 'install', 'trust', 'proven'];
 
   test('one row per harness, each with every field', () => {
     assert.deepEqual(HARNESSES.map((h) => h.id), ['claude-code', ...OTHER_HARNESSES]);

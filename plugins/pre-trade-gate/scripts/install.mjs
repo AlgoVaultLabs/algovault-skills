@@ -79,7 +79,10 @@ export function targetFor(row, { project = null, home, platform = process.platfo
   }
   const user = row.config.user;
   let configPath;
-  if (platform === 'win32' && user.win32) {
+  if (user.homeEnv && env[user.homeEnv.env]) {
+    // The harness keeps its user config where this variable points, when it is set.
+    configPath = p.join(p.resolve(env[user.homeEnv.env]), ...user.homeEnv.path);
+  } else if (platform === 'win32' && user.win32) {
     const base = env[user.win32.env];
     if (!base) throw new Refused(`${user.win32.env} is not set, so ${row.name}'s config cannot be found`);
     configPath = p.join(base, ...user.win32.path);
@@ -275,7 +278,8 @@ export function main(argv, { home = homedir(), platform = process.platform, env 
   }
   log(`Data dir: ${target.dataDir} (max_age_minutes ${options.options.max_age_minutes}, on_wait ${options.options.on_wait}).`);
   log(crashLine(row));
-  if (target.level === 'project') log(`Project hooks run only once ${row.name} trusts this project.`);
+  if (row.trust?.hooks) log(`${row.name} runs a new or changed hook only once you trust it: it asks the next time it starts.`);
+  if (row.trust?.project && target.level === 'project') log(`${row.name} runs this project's hooks only once it trusts the project.`);
   return 0;
 }
 

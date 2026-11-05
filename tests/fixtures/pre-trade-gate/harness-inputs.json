@@ -1,5 +1,5 @@
 {
-  "_source": "Hook inputs as each harness documents them: pre-trade-gate contract § Harnesses (read 2026-11-04), plus the Codex, Cursor, Gemini CLI and Devin hook pages re-read 2026-11-05 for the fields the contract leaves out. Keys and nesting follow the docs; values are illustrative. __CHECK__ stands for a pre_trade_check result text (check-results.json) and __CHECK_RESULT__ for Cursor's result_json, the MCP result as a JSON string. Codex's PostToolUse tool_response is documented only as 'the MCP call result'; it is shown here as an MCP CallToolResult.",
+  "_source": "Hook inputs as each harness documents them: pre-trade-gate contract § Harnesses (read 2026-11-04), plus the Codex, Cursor, Gemini CLI and Devin hook pages re-read 2026-11-05 for the fields the contract leaves out. Keys and nesting follow the docs; values are illustrative. __CHECK__ stands for a pre_trade_check result text (check-results.json) and __CHECK_RESULT__ for Cursor's result_json, the MCP result as a JSON string. Codex's keys and nesting are the ones measured in a real codex exec run (codex-cli 0.166.0-alpha.5.1, 2026-11-05): its PostToolUse tool_response for an MCP tool is the MCP CallToolResult, content only, with no isError on success.",
   "codex": {
     "gate": {
       "session_id": "codex-session-1",
@@ -20,10 +20,11 @@
       "hook_event_name": "PostToolUse",
       "model": "gpt-model",
       "turn_id": "turn-1",
+      "permission_mode": "default",
       "tool_name": "mcp__algovault__pre_trade_check",
       "tool_use_id": "call_check_1",
       "tool_input": { "coin": "BTC", "side": "long", "sizeUsd": 1000 },
-      "tool_response": { "content": [{ "type": "text", "text": "__CHECK__" }], "isError": false }
+      "tool_response": { "content": [{ "type": "text", "text": "__CHECK__" }] }
     }
   },
   "cursor": {

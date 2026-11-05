@@ -28,10 +28,10 @@ const tmp = (p) => mkdtempSync(join(tmpdir(), p));
 const read = (f) => readFileSync(f, 'utf8');
 const json = (f) => JSON.parse(read(f));
 
-function install(args, { home, allowUnproven = true }) {
+function install(args, { home, allowUnproven = true, env = {} }) {
   const flags = allowUnproven ? [...args, '--allow-unproven'] : args;
   const r = spawnSync(process.execPath, [INSTALL, ...flags], {
-    env: { PATH: process.env.PATH ?? '', HOME: home },
+    env: { PATH: process.env.PATH ?? '', HOME: home, ...env },
     encoding: 'utf8',
   });
   return { code: r.status, stdout: r.stdout, stderr: r.stderr };
@@ -238,6 +238,44 @@ describe('paths', () => {
     for (const [id, p] of Object.entries(want)) assert.equal(targetFor(harness(id), { home, platform: 'linux', env: {} }).configPath, p);
     assert.equal(targetFor(harness('devin'), { project: '/w', home, platform: 'linux' }).configPath, '/w/.devin/hooks.v1.json');
     assert.equal(targetFor(harness('devin'), { project: '/w', home, platform: 'linux' }).hooksKey, null);
+  });
+
+  test('Codex with CODEX_HOME set: $CODEX_HOME/hooks.json, the file Codex reads then', () => {
+    const t = targetFor(harness('codex'), { home: '/home/u', platform: 'linux', env: { CODEX_HOME: '/opt/codex-home' } });
+    assert.equal(t.configPath, '/opt/codex-home/hooks.json');
+    assert.equal(t.dataDir, '/home/u/.algovault/pre-trade-gate');
+    assert.equal(targetFor(harness('codex'), { home: '/home/u', platform: 'linux', env: { CODEX_HOME: '' } }).configPath, '/home/u/.codex/hooks.json');
+    assert.equal(targetFor(harness('codex'), { project: '/w', home: '/home/u', platform: 'linux', env: { CODEX_HOME: '/opt/codex-home' } }).configPath, '/w/.codex/hooks.json');
+  });
+
+  test('an install with CODEX_HOME set writes there and nothing under ~/.codex', () => {
+    const home = tmp('ptg-home-');
+    const codexHome = tmp('ptg-codex-home-');
+    const r = install(['codex'], { home, env: { CODEX_HOME: codexHome } });
+    assert.equal(r.code, 0, r.stderr);
+    const events = json(join(codexHome, 'hooks.json')).hooks;
+    assert.deepEqual(events, expectedEntries('codex', join(home, '.algovault', 'pre-trade-gate')));
+    assert.ok(!existsSync(join(home, '.codex')), 'wrote ~/.codex although CODEX_HOME is set');
+  });
+});
+
+describe('what the installer tells the user', () => {
+  test('Codex: new hooks run only once trusted; a project install, only in a trusted project', () => {
+    const user = install(['codex'], { home: tmp('ptg-home-') });
+    assert.equal(user.code, 0, user.stderr);
+    assert.ok(user.stdout.includes('Codex runs a new or changed hook only once you trust it: it asks the next time it starts.'), user.stdout);
+    assert.ok(!user.stdout.includes('trusts this project'), user.stdout);
+    const project = install(['codex', '--project', tmp('ptg-proj-')], { home: tmp('ptg-home-') });
+    assert.equal(project.code, 0, project.stderr);
+    assert.ok(project.stdout.includes("Codex runs this project's hooks only once it trusts the project."), project.stdout);
+  });
+
+  test('no trust line for a harness whose trust rules were not measured', () => {
+    for (const id of ['cursor', 'gemini', 'devin']) {
+      const r = install([id, '--project', tmp('ptg-proj-')], { home: tmp('ptg-home-') });
+      assert.equal(r.code, 0, r.stderr);
+      assert.ok(!/trust/i.test(r.stdout), `${id}: ${r.stdout}`);
+    }
   });
 });
 

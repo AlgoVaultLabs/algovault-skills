@@ -62,6 +62,37 @@ Switch it off:
 claude plugin disable algovault-pre-trade-gate@algovault-skills
 ```
 
+## Pre-trade gate (Codex)
+
+The same gate runs in the Codex CLI, through Codex's hooks. It needs Node.js 20+:
+
+```bash
+git clone https://github.com/AlgoVaultLabs/algovault-skills.git
+node algovault-skills/plugins/pre-trade-gate/scripts/install.mjs codex
+```
+
+That adds the gate to `~/.codex/hooks.json` (`$CODEX_HOME/hooks.json` when `CODEX_HOME` is set),
+for every project. Add `--project <dir>` to put it in that project's `.codex/hooks.json` instead;
+Codex runs a project's hooks only once it trusts the project. Keep the clone where it is: the
+hooks run the gate from it.
+
+Codex runs a new hook only once you trust it. The next time it starts, it asks you to review the
+gate's two hooks: trust them, or the gate does not run.
+
+It gates, passes and blocks the same orders as in Claude Code, above, and watches only those
+built-in order tools. `--max-age <minutes>` sets how old a check may be (1 to 240, default 15).
+Codex cannot ask a person to approve a hook's decision, so a WAIT is always blocked.
+
+If the gate itself crashes or times out, Codex lets the order through: no Codex setting makes a
+failed hook block. The gate blocks an order on every error it can catch, and it never blocks an
+AlgoVault tool.
+
+Remove it (add the same `--project <dir>` if you installed it there):
+
+```bash
+node algovault-skills/plugins/pre-trade-gate/scripts/install.mjs codex --uninstall
+```
+
 ## Integrations
 
 End-to-end tutorials pairing AlgoVault's analytics with each major exchange's

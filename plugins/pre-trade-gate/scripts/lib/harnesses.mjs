@@ -39,6 +39,7 @@ export const HARNESSES = Object.freeze([
     matcher: { gate: CLAUDE_GATE_MATCHER, record: '^mcp__.*__pre_trade_check$' },
     install: 'plugin',
     config: null,
+    trust: null,
     proven: {
       date: '2026-11-04',
       evidence:
@@ -63,10 +64,18 @@ export const HARNESSES = Object.freeze([
     config: {
       layout: 'groups',
       timeout: { unit: 's', value: TIMEOUT_SECONDS },
-      user: { path: ['.codex', 'hooks.json'], hooksKey: 'hooks' },
+      // With CODEX_HOME set, Codex reads its user hooks from $CODEX_HOME/hooks.json (measured 2026-11-05).
+      user: { path: ['.codex', 'hooks.json'], homeEnv: { env: 'CODEX_HOME', path: ['hooks.json'] }, hooksKey: 'hooks' },
       project: { path: ['.codex', 'hooks.json'], hooksKey: 'hooks' },
     },
-    proven: null,
+    // Measured 2026-11-05: a project's .codex/hooks.json loads only in a project Codex trusts, and
+    // a new or changed hook is listed untrusted, and does not run, until the user trusts it.
+    trust: { project: true, hooks: true },
+    proven: {
+      date: '2026-11-05',
+      evidence:
+        'codex exec (codex-cli 0.166.0-alpha.5.1) in a scratch project set up by install.mjs codex --project, stub OKX server: an unchecked swap_place_order was blocked by the PreToolUse hook with the missing-check message (stub 0 calls); after a GO check the same order reached the stub once',
+    },
   },
   {
     id: 'cursor',
@@ -90,6 +99,7 @@ export const HARNESSES = Object.freeze([
       user: { path: ['.cursor', 'hooks.json'], hooksKey: 'hooks' },
       project: { path: ['.cursor', 'hooks.json'], hooksKey: 'hooks' },
     },
+    trust: null,
     proven: null,
   },
   {
@@ -111,6 +121,7 @@ export const HARNESSES = Object.freeze([
       user: { path: ['.gemini', 'settings.json'], hooksKey: 'hooks' },
       project: { path: ['.gemini', 'settings.json'], hooksKey: 'hooks' },
     },
+    trust: null,
     proven: null,
   },
   {
@@ -133,6 +144,7 @@ export const HARNESSES = Object.freeze([
       // In .devin/hooks.v1.json the hooks object is the whole file.
       project: { path: ['.devin', 'hooks.v1.json'], hooksKey: null },
     },
+    trust: null,
     proven: null,
   },
 ].map(deepFreeze));

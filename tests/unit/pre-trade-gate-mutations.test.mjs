@@ -1,4 +1,4 @@
-// Proves tests/unit/pre-trade-gate.test.mjs and pre-trade-gate-harnesses.test.mjs can fail.
+// Proves the pre-trade gate suites can fail: tests/unit/pre-trade-gate{,-harnesses,-adapters,-install}.test.mjs.
 //
 // Each mutation breaks one safety property in a COPY of plugins/pre-trade-gate, and the
 // suite that holds its assertion, pointed at that copy through PRE_TRADE_GATE_ROOT, must
@@ -21,6 +21,8 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PLUGIN = join(REPO, 'plugins', 'pre-trade-gate');
 const SUITE = join(REPO, 'tests', 'unit', 'pre-trade-gate.test.mjs');
 const HARNESS_SUITE = join(REPO, 'tests', 'unit', 'pre-trade-gate-harnesses.test.mjs');
+const ADAPTERS_SUITE = join(REPO, 'tests', 'unit', 'pre-trade-gate-adapters.test.mjs');
+const INSTALL_SUITE = join(REPO, 'tests', 'unit', 'pre-trade-gate-install.test.mjs');
 
 // Each mutation runs the suite that holds its assertion (default: the Claude Code suite).
 const MUTATIONS = [
@@ -85,6 +87,34 @@ const MUTATIONS = [
     suite: HARNESS_SUITE,
     file: 'scripts/lib/order-tools.mjs',
     from: "  if (toolName.startsWith('mcp_')) {",
+    to: '  if (false) {',
+  },
+  {
+    name: 'uninstall removing a foreign hook',
+    suite: INSTALL_SUITE,
+    file: 'scripts/install.mjs',
+    from: "  if (typeof command !== 'string') return false;",
+    to: "  if (typeof command === 'string') return true;",
+  },
+  {
+    name: 'a Cursor deny without exit 2',
+    suite: ADAPTERS_SUITE,
+    file: 'scripts/cursor.mjs',
+    from: 'stderr: result.reason, exitCode: 2 };',
+    to: 'stderr: result.reason, exitCode: 0 };',
+  },
+  {
+    name: "Gemini's allow printing a decision",
+    suite: ADAPTERS_SUITE,
+    file: 'scripts/gemini.mjs',
+    from: "  if (result.decision === 'allow') return { exitCode: 0 };",
+    to: "  if (result.decision === 'allow') return { stdout: { decision: 'allow' }, exitCode: 0 };",
+  },
+  {
+    name: 'the installer accepting an unproven harness',
+    suite: INSTALL_SUITE,
+    file: 'scripts/install.mjs',
+    from: '  if (!o.uninstall && !row.proven && !o.allowUnproven) {',
     to: '  if (false) {',
   },
 ];

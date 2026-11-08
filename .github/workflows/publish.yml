@@ -42,52 +42,6 @@ jobs:
           jq -e '.name == "algovault-skills"' .claude-plugin/plugin.json
           jq -e '.mcpServers.algovault.url == "https://api.algovault.com/mcp"' .claude-plugin/plugin.json
 
-      # ───────── Smithery publish (gated on API key) ─────────
-      # Smithery CLI v4.x: per-skill `skill publish`, namespace via --namespace flag,
-      # auth via SMITHERY_API_KEY env var. Each manifest entry maps to skills/<slug>/SKILL.md.
-      - name: Publish 20 skills to Smithery (if API key present)
-        env:
-          SMITHERY_API_KEY: ${{ secrets.SMITHERY_API_KEY }}
-        run: |
-          if [ -z "$SMITHERY_API_KEY" ]; then
-            echo "SKIP: SMITHERY_API_KEY not set in repo secrets — manual publish required"
-            echo "    1. npx -y @smithery/cli auth login"
-            echo "    2. for slug in \$(jq -r '.[].slug' skills/manifest.json); do"
-            echo "         npx -y @smithery/cli skill publish ./skills/\$slug --namespace algovault"
-            echo "       done"
-            exit 0
-          fi
-          # DISTRIBUTION-CLOSEOUT-W1 R1: exit-code-primary success detection.
-          # Prior version did `if cmd | grep -q "Updated skill"` which broke for
-          # already-published skills (Smithery emits a different message on no-op
-          # republish, e.g. "Already published" / "No changes" / etc — exact text
-          # varies across CLI versions). Relying on grep meant 0 ok / 20 fail on
-          # every workflow re-run after the initial v0.1.0 publish (run 25055785434).
-          # New logic: success = exit 0 OR stdout matches a broadened pattern.
-          # Captures stdout for diagnostic logging on real failures (not silently
-          # swallowed by the pipe-to-grep pattern).
-          # Note: GitHub Actions runs `bash -e {0}` by default, which would
-          # abort the script on the first non-zero `npx` exit BEFORE we get to
-          # capture `$?`. The `if cmd; then` wrapper around the assignment
-          # swallows -e exactly the same way the prior `if cmd | grep` did,
-          # while still letting us read the exit code from the `else` branch.
-          OK=0; FAIL=0
-          while IFS= read -r slug; do
-            if PUBLISH_OUT=$(npx -y @smithery/cli skill publish "./skills/$slug" --namespace algovault 2>&1); then
-              PUBLISH_EXIT=0
-            else
-              PUBLISH_EXIT=$?
-            fi
-            if [ "$PUBLISH_EXIT" = "0" ] || echo "$PUBLISH_OUT" | grep -qiE "updated skill|already published|no changes|up to date|already exists|published successfully"; then
-              OK=$((OK+1)); echo "  ✓ algovault/$slug"
-            else
-              FAIL=$((FAIL+1)); echo "  ✗ algovault/$slug (exit=$PUBLISH_EXIT)"
-              echo "$PUBLISH_OUT" | head -5 | sed 's/^/      /'
-            fi
-          done < <(jq -r '.[].slug' skills/manifest.json)
-          echo "Smithery publish: $OK ok / $FAIL fail (expected 20/0)"
-          test "$FAIL" = "0"
-
       # ───────── Anthropic official marketplace submission ─────────
       # DISTRIBUTION-CLOSEOUT-W1 R1 final state (2026-04-28 retro):
       # The fork-based PR flow we built here was DEAD-END — anthropics/claude-
@@ -132,7 +86,6 @@ jobs:
         run: |
           echo "PUBLISH_DONE tag=${{ github.ref_name }} sha=${{ github.sha }}"
           echo "  - Manifest validated, 20 skills emit clean."
-          echo "  - Smithery: published if token, else manual."
           echo "  - Anthropic PR: opened if token, else manual."
           echo "  - claudemarketplaces.com: MANUAL (no API)."
           echo "  - skillsmp.com: MANUAL (no API)."

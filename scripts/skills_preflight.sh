@@ -19,10 +19,7 @@ fi
 # 3. npm available (A6 — switched from pnpm; npm is universally present)
 npm --version >/dev/null 2>&1 || fail "npm not on PATH"
 
-# 4. Smithery CLI available via npx (no global install required)
-npx -y @smithery/cli --version >/dev/null 2>&1 || fail "@smithery/cli unreachable via npx"
-
-# 5. AlgoVault MCP reachable — full Streamable-HTTP MCP handshake (A1 replacement
+# 4. AlgoVault MCP reachable — full Streamable-HTTP MCP handshake (A1 replacement
 #    for the non-existent .well-known/mcp-manifest endpoint).
 #    Step a: POST initialize, capture the mcp-session-id header IF the server sends one.
 #    Step b: Send notifications/initialized (required by spec).
@@ -93,6 +90,6 @@ test "$TOOL_COUNT" -ge 1 || fail "MCP tools/list returned an empty tool list"
 echo "$TOOLS_JSON" | jq -e '.result.tools | map(.name) | index("get_trade_call")' >/dev/null 2>&1 \
   || fail "MCP tools/list ($TOOL_COUNT tools) does not expose get_trade_call"
 
-# 6. ADMIN_KEY check deferred to C6 (A2 — key is rotated value per CLAUDE.md, not stored in any .env on disk)
+# 5. ADMIN_KEY check deferred to C6 (A2 — key is rotated value per CLAUDE.md, not stored in any .env on disk)
 
 echo "PREFLIGHT_GREEN"

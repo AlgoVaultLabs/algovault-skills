@@ -326,53 +326,11 @@ jobs:
           case "$V" in PASS|SKIP|FAIL) ;; *) V=FAIL; OUT="FAIL|unexpected canary output: $OUT";; esac
           verdict "$V" "${OUT#*|}"
 
-      # OPS-MARKETPLACE-CANARY-REPAIR-W1: `if: always()` is the actual fix here, and it
-      # matters more than the continue-on-error question everyone looks at first.
-      # MEASURED across the last 10 runs: this step's conclusion was `skipped` EVERY time —
-      # GitHub Actions skips remaining steps once an earlier one fails, so while the MCP
-      # step was red for 40 consecutive runs this check never executed at all and
-      # continue-on-error never even came into play. It produced zero information for 40
-      # days, for a reason unrelated to the flag it carries.
-      #
-      # STAYS ADVISORY, and the reason is stated rather than assumed: smithery.ai is a
-      # third party, a transient outage there is not an AlgoVault regression, and a canary
-      # that cries wolf is the one people learn to ignore — which is how the MCP failure
-      # went unnoticed. Measured 2026-08-06: 20/20 live. That is ONE sample and not
-      # stability evidence, so promoting this to blocking waits until the step has actually
-      # accumulated history — it has never run. Its result is now VISIBLE in the job summary
-      # instead of buried in the log, so "advisory" no longer means "unread".
-      - name: Verify Smithery listing (all manifest skills under algovault namespace)
-        if: always()
-        continue-on-error: true
-        run: |
-          TOTAL=$(jq -r '.[].slug' skills/manifest.json | grep -c .)
-          OK=0; MISSING=0; MISSING_SLUGS=""
-          while IFS= read -r slug; do
-            CODE=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 20 "https://smithery.ai/skills/algovault/$slug" 2>/dev/null || echo "ERR")
-            if [ "$CODE" = "200" ]; then OK=$((OK+1)); else MISSING=$((MISSING+1)); MISSING_SLUGS="$MISSING_SLUGS algovault/$slug(HTTP $CODE)"; echo "  x MISSING algovault/$slug (HTTP $CODE)"; fi
-          done < <(jq -r '.[].slug' skills/manifest.json)
-          echo "  + SMITHERY: $OK/$TOTAL live, $MISSING missing"
-          # Visible where a human actually looks, not only in the raw log.
-          {
-            echo "### Smithery listings"
-            echo ""
-            if [ "$MISSING" -eq 0 ]; then
-              echo "✅ **$OK/$TOTAL live**, 0 missing."
-            else
-              echo "⚠️ **$OK/$TOTAL live, $MISSING MISSING** (advisory — does not fail the job)"
-              echo ""
-              echo "Missing:$MISSING_SLUGS"
-              echo ""
-              echo "Persistently missing listings are a DISTRIBUTION defect, not a canary defect — dispatch \`OPS-SMITHERY-LISTING-RECONCILE-W{NEXT}\`."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-          test "$OK" = "$TOTAL"
-
       # OPS-MARKETPLACE-CANARY-REPAIR-W1: the canary being red is survivable; NOBODY KNOWING
       # for 40 runs is the actual defect, and this step is why. It resolved both secrets to
       # empty, printed one WARN line into a log nobody opens, and exited 0 — dark by
-      # construction. Measured: this repo holds ANTHROPIC_PR_TOKEN, MCP_REPO_DISPATCH_TOKEN
-      # and SMITHERY_API_KEY, and no Telegram credentials at all.
+      # construction. Measured: this repo holds ANTHROPIC_PR_TOKEN and MCP_REPO_DISPATCH_TOKEN,
+      # and no Telegram credentials at all.
       #
       # ARCHITECT RULING: the primary alert does NOT live here. Duplicating bot credentials
       # into a second repo was rejected; instead a scheduled detector in

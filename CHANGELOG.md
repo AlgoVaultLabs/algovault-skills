@@ -5,6 +5,12 @@ All notable changes to `@algovaultlabs/skills` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-11-08 — Pre-trade gate
+
+### Added
+- `algovault-pre-trade-gate` plugin. It blocks an order tool call until `pre_trade_check` has recently checked that coin and side, and blocks it when the check returns WAIT; a gate that cannot run blocks the order. Claude Code: `claude plugin install algovault-pre-trade-gate@algovault-skills`. Codex: through the plugin's installer, `scripts/install.mjs codex`.
+- LangChain middleware (`examples/langchain/pre_trade_gate.py`) and Freqtrade `confirm_trade_entry` (`examples/freqtrade/`) recipes that run the check before an order and block it when the check cannot run.
+
 ## [0.2.0] - 2026-05-18 — Framework integrations
 
 ### Added — 4 drop-in framework tutorials + runnable demos
